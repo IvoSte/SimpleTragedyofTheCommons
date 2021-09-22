@@ -18,4 +18,8 @@ impl Commons {
         self.resource_pool -= res;
         return res;
     }
+
+    pub fn print_pool(&self) {
+        println!("Resource pool: {}", self.resource_pool)
+    }
 }

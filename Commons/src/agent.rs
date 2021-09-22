@@ -1,3 +1,8 @@
+mod agentBrain;
+
+use agentBrain::AgentBrain;
+
+#[derive(PartialEq, Eq)]
 pub enum AgentState {
     ALIVE,
     DEAD
@@ -9,6 +14,7 @@ pub struct Agent {
     pub days_lived: u32,
     pub state: AgentState,
     pub planned_action: u32,
+    pub brain: AgentBrain,
 }
 
 impl Agent {
@@ -26,6 +32,7 @@ impl Agent {
             days_lived: 0,
             state: AgentState::ALIVE,
             planned_action: 0,
+            brain: AgentBrain::new(),
         }
     }
 
@@ -43,8 +50,27 @@ impl Agent {
         self.score += value;
     }
 
-    pub fn live(&mut self) {
+    pub fn consume(&mut self, value: i32) {
+        self.score -= value;
+        if self.score < 0 {
+            self.state = AgentState::DEAD;
+        }
+    }
+
+    pub fn is_alive(&self) -> bool {
+        return self.state == AgentState::ALIVE;
+    }
+
+    pub fn set_alive(&mut self) {
+        self.state = AgentState::ALIVE;
+    }
+
+    pub fn print_score(&self) {
+        println!("Agent {} has score {}", self.id, self.score);
+    }
+
+//    pub fn live(&mut self) {
         // Advance one time step, so do things like
         // reducing score, planning next action, etc.
-    }
+//    }
 }
