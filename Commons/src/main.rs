@@ -32,7 +32,7 @@ fn single_epoch(agents: &mut Vec<Agent>, commons: &mut Commons) {
             agent.decide_action();
             let desired_resources = agent.desired_resources();
             let taken_resources = commons.take_resources(desired_resources);
-            agent.give_resources(taken_resources as i32);
+            agent.get_resources(taken_resources as u32);
             agent.consume(0);
             agent.print_score();
         }

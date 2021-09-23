@@ -32,22 +32,23 @@ impl Agent {
             days_lived: 0,
             state: AgentState::ALIVE,
             planned_action: 0,
-            brain: AgentBrain::new(),
+            brain: AgentBrain::new(5),
         }
     }
 
     /// Choose how many resources to take
     pub fn decide_action(&mut self) {
     // Q-Learning decision process
-        self.planned_action = 1;
+        self.planned_action = self.brain.decide_action();
     }
 
     pub fn desired_resources(&self) -> u32 {
         return self.planned_action;
     }
 
-    pub fn give_resources(&mut self, value: i32) {
-        self.score += value;
+    pub fn get_resources(&mut self, value: u32) {
+        self.score += value as i32;
+        self.brain.update_ev(value);
     }
 
     pub fn consume(&mut self, value: i32) {
