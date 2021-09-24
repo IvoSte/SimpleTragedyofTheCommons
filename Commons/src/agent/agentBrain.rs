@@ -1,5 +1,3 @@
-mod rand;
-
 use rand::Rng;
 
 pub struct Action {
@@ -28,27 +26,27 @@ pub struct Actions {
 
 impl Actions {
     // Container for all availible actions. All 'non-cognitive' operations on action selection can be done here
+    fn init_actions(num_actions: u32) -> Vec<Action> {
+        let mut actions: Vec<Action> = Vec::with_capacity(num_actions as usize);
+        for action_num in 0..num_actions {
+            // TODO: initialization strategy can be applied here
+            actions.push(Action::new(action_num as u32, 0.0, 0));
+        }
+        return actions;
+    }
+
     pub fn new(num_actions: Option<i32>) -> Actions {
         Actions {
             actions: init_actions(num_actions.unwrap_or(5)),
         }
     }
     
-    fn init_actions(num_actions: i32) -> Vec<Action> {
-        let mut actions: Vec<Action> = Vec::with_capacity(num_actions);
-        for action_num in 0..num_actions {
-            // TODO: initialization strategy can be applied here
-            actions.push(Action::new(action_num, 0, 0));
-        }
-        return actions;
-    }
-
     pub fn max_ev_action(&self) -> &Action {
         // This can be a lot cleaner TODO
         let mut max_action: Action::new(0, -99999, 0);
         for action in &self.actions {
             if action.expected_value > max_action.expected_value {
-                max_action = &action;
+                max_action = action;
             }
         }
         max_action
@@ -69,7 +67,7 @@ impl AgentBrain {
     // Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
     pub fn new(num_actions: Option<i32>) -> AgentBrain {
         AgentBrain {
-            actions: init_actions(num_actions.unwrap_or(5)),
+            actions: Actions::new(num_actions.unwrap_or(5)),
             // TODO find better way than declaring dummy defaults
             last_action: Action::new(0, -99999, 0),
             last_reward: 0,
@@ -85,6 +83,9 @@ impl AgentBrain {
     pub fn update_ev(&self, value: i32) {
         // TODO ended here. Update EV of the chosen action with the new value.
         // Average received value with amount of times action is chosen. 
+
+        // Dummy function updating the value only to actual value, for testing purposes TODO remove
+        self.last_action.expected_value = value;
     }
 }
 
