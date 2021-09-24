@@ -10,11 +10,11 @@ pub enum AgentState {
 
 pub struct Agent {
     pub id: u32,
-    pub score: i32,
+    score: i32,
     pub days_lived: u32,
-    pub state: AgentState,
-    pub planned_action: u32,
-    pub brain: AgentBrain,
+    state: AgentState,
+    planned_action: u32,
+    brain: AgentBrain,
 }
 
 impl Agent {
@@ -42,12 +42,12 @@ impl Agent {
         self.planned_action = self.brain.decide_action();
     }
 
-    pub fn desired_resources(&self) -> u32 {
+    pub fn desired_resources(&self) -> i32 {
         return self.planned_action;
     }
 
-    pub fn get_resources(&mut self, value: u32) {
-        self.score += value as i32;
+    pub fn get_resources(&mut self, value: i32) {
+        self.score += value;
         self.brain.update_ev(value);
     }
 

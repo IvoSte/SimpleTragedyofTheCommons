@@ -26,34 +26,35 @@ pub struct Actions {
 
 impl Actions {
     // Container for all availible actions. All 'non-cognitive' operations on action selection can be done here
+
+    pub fn new(num_actions: Option<u32>) -> Actions {
+        Actions {
+            actions: Self::init_actions(num_actions.unwrap_or(5)),
+        }
+    }
+
     fn init_actions(num_actions: u32) -> Vec<Action> {
         let mut actions: Vec<Action> = Vec::with_capacity(num_actions as usize);
         for action_num in 0..num_actions {
             // TODO: initialization strategy can be applied here
-            actions.push(Action::new(action_num as u32, 0.0, 0));
+            actions.push(Action::new(action_num, 0., 0));
         }
         return actions;
     }
 
-    pub fn new(num_actions: Option<i32>) -> Actions {
-        Actions {
-            actions: init_actions(num_actions.unwrap_or(5)),
-        }
-    }
-    
     pub fn max_ev_action(&self) -> &Action {
         // This can be a lot cleaner TODO
-        let mut max_action: Action::new(0, -99999, 0);
+        let &mut max_action: Action::new(0, -99999., 0);
         for action in &self.actions {
             if action.expected_value > max_action.expected_value {
                 max_action = action;
             }
         }
-        max_action
+        return max_action;
     }
 
     pub fn random_action(&self) -> &Action {
-        return &self.actions.choose(&mut rand::thread_rng());        
+        return &self.actions.choose(&mut rand::thread_rng());
     }
 }
 
@@ -69,13 +70,13 @@ impl AgentBrain {
         AgentBrain {
             actions: Actions::new(num_actions.unwrap_or(5)),
             // TODO find better way than declaring dummy defaults
-            last_action: Action::new(0, -99999, 0),
+            last_action: Action::new(0, -99999., 0),
             last_reward: 0,
         }
     }
-    
+
     pub fn decide_action(&self) -> u32 {
-        self.last_action = &eGreedy(&self.actions, 0.1);
+        self.last_action = &epsilon_greedy(&self.actions, 0.1);
         self.last_action.times_chosen += 1;
         return self.last_action.num_resources;
     }
@@ -85,17 +86,15 @@ impl AgentBrain {
         // Average received value with amount of times action is chosen. 
 
         // Dummy function updating the value only to actual value, for testing purposes TODO remove
-        self.last_action.expected_value = value;
+        self.last_action.expected_value = value as f32;
     }
 }
 
 // TODO should this be inside or outside the brain? Outside seems good, but possibly better inside. 
-pub fn eGreedy(actions: &Vec<Choise>, epsilon: &f32) -> &Action {
+pub fn epsilon_greedy(actions: &Vec<Action>, epsilon: &f32) -> Action {
     if rand::thread_rng().gen::<f32> < epsilon {
         return &actions.random_action();
     } else {
         return &actions.max_ev_action();
     }
 }
-
-
