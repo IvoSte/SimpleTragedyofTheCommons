@@ -1,5 +1,6 @@
 // Crates
 // extern crate dotenv;
+extern crate float_ord;
 
 // Modules
 mod agent;
@@ -10,7 +11,6 @@ use agent::Agent;
 use commons::Commons;
 // use dotenv::dotenv;
 // use std::env;
-
 
 fn make_agents(n_agents: usize) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents);

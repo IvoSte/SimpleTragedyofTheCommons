@@ -1,5 +1,5 @@
 [package]
-name = "Commons"
+name = "commons"
 version = "0.1.0"
 authors = ["IvoSte <36919251+IvoSte@users.noreply.github.com>"]
 edition = "2018"
@@ -10,3 +10,4 @@ edition = "2018"
 
 rand = "0.8.4"
 dotenv = "0.15.0"
+float-ord = "0.3.2"

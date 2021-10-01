@@ -1,5 +1,5 @@
+use float_ord::FloatOrd;
 use rand::seq::SliceRandom;
-use rand::Rng;
 use std::ops::{Index, IndexMut};
 
 /// An action / action availible to an agent, tracking its own statistics
@@ -60,18 +60,28 @@ impl Actions {
         return actions;
     }
 
-    pub fn max_ev_action(&self) -> &Action {
-        return self.actions.iter().max_by_key(|action| action.expected_value).unwrap();
+    pub fn max_ev_action(&mut self) -> &mut Action {
+        return self
+            .actions
+            .iter_mut()
+            .max_by_key(|action| FloatOrd(action.expected_value))
+            .unwrap();
     }
 
-    pub fn random_action(&self) -> &Action {
-        return self.actions.choose(&mut rand::thread_rng()).unwrap();
+    pub fn random_action(&mut self) -> &mut Action {
+        return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
     }
 }
 
 impl Index<usize> for Actions {
     type Output = Action;
-    fn index<'a>(&'a self, i: usize) -> &'a Action {
+    fn index(&self, i: usize) -> &Action {
         &self.actions[i]
+    }
+}
+
+impl IndexMut<usize> for Actions {
+    fn index_mut(&mut self, i: usize) -> &mut Action {
+        &mut self.actions[i]
     }
 }
