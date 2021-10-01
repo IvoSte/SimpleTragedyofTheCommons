@@ -1,3 +1,4 @@
+use rand::seq::SliceRandom;
 use rand::Rng;
 
 pub struct Action {
@@ -44,8 +45,8 @@ impl Actions {
 
     pub fn max_ev_action(&self) -> &Action {
         // This can be a lot cleaner TODO
-        let max_action: &mut Action = Action::new(0, -99999., 0);
-        for action in &mut self.actions {
+        let max_action: &Action = &Action::new(0, -99999., 0);
+        for action in &self.actions {
             if action.expected_value > max_action.expected_value {
                 max_action = action;
             }
@@ -59,7 +60,7 @@ impl Actions {
 }
 
 pub struct AgentBrain {
-    actions: Vec<Action>,
+    actions: Actions,
     last_action: Action,
     last_reward: i32,
 }
@@ -68,7 +69,7 @@ impl AgentBrain {
     // Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
     pub fn new(num_actions: Option<i32>) -> AgentBrain {
         AgentBrain {
-            actions: Actions::new(num_actions.unwrap_or(6)),
+            actions: Actions::new(num_actions),
             // TODO find better way than declaring dummy defaults
             last_action: Action::new(0, -99999., 0),
             last_reward: 0,
@@ -83,16 +84,16 @@ impl AgentBrain {
 
     pub fn update_ev(&self, value: i32) {
         // TODO ended here. Update EV of the chosen action with the new value.
-        // Average received value with amount of times action is chosen. 
+        // Average received value with amount of times action is chosen.
 
         // Dummy function updating the value only to actual value, for testing purposes TODO remove
         self.last_action.expected_value = value as f32;
     }
 }
 
-// TODO should this be inside or outside the brain? Outside seems good, but possibly better inside. 
+// TODO should this be inside or outside the brain? Outside seems good, but possibly better inside.
 pub fn epsilon_greedy(actions: &Vec<Action>, epsilon: &f32) -> Action {
-    if rand::thread_rng().gen::<f32> < epsilon {
+    if rand::thread_rng().gen::<f32>() < epsilon {
         return &actions.random_action();
     } else {
         return &actions.max_ev_action();

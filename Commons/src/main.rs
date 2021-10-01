@@ -21,12 +21,10 @@ fn make_agents(n_agents: usize) -> Vec<Agent> {
 fn regrow(current_amount: i32) -> i32 {
     // TODO: pay attention that this makes sense --> whole integers and floats mixed
     // Cap at certain amount (?)
- 
     return (current_amount as f32 * 1.2) as i32;
 }
 
 fn single_epoch(agents: &mut Vec<Agent>, commons: &mut Commons) {
-
     for agent in agents {
         if agent.is_alive() {
             agent.decide_action();
@@ -62,5 +60,4 @@ fn main() {
     let mut agents = make_agents(n_agents);
     let mut commons = Commons::new(100, regrow);
     run_experiment(1, 2, &mut agents, &mut commons);
-
 }
