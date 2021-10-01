@@ -9,11 +9,11 @@ pub enum AgentState {
 }
 
 pub struct Agent {
-    pub id: u32,
+    pub id: i32,
     score: i32,
-    pub days_lived: u32,
+    pub days_lived: i32,
     state: AgentState,
-    planned_action: u32,
+    planned_action: i32,
     brain: AgentBrain,
 }
 
@@ -24,7 +24,7 @@ impl Agent {
     ///
     /// * `id`    - An unsigned int to uniquely identify this agent
     /// * `score` - An integer that represents the agent's starting score
-    pub fn new(id: u32, score: Option<i32>) -> Agent {
+    pub fn new(id: i32, score: Option<i32>) -> Agent {
         Agent {
             id: id,
             // Default score value 0
@@ -32,7 +32,7 @@ impl Agent {
             days_lived: 0,
             state: AgentState::ALIVE,
             planned_action: 0,
-            brain: AgentBrain::new(5),
+            brain: AgentBrain::new(None),
         }
     }
 

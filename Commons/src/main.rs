@@ -13,16 +13,16 @@ fn make_agents(n_agents: usize) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents);
 
     for id in 0..n_agents {
-        agents.push(Agent::new(id as u32, None));
+        agents.push(Agent::new(id as i32, None));
     }
     return agents;
 }
 
-fn regrow(current_amount: u32) -> u32 {
+fn regrow(current_amount: i32) -> i32 {
     // TODO: pay attention that this makes sense --> whole integers and floats mixed
     // Cap at certain amount (?)
  
-    return (current_amount as f32 * 1.2) as u32;
+    return (current_amount as f32 * 1.2) as i32;
 }
 
 fn single_epoch(agents: &mut Vec<Agent>, commons: &mut Commons) {
@@ -32,7 +32,7 @@ fn single_epoch(agents: &mut Vec<Agent>, commons: &mut Commons) {
             agent.decide_action();
             let desired_resources = agent.desired_resources();
             let taken_resources = commons.take_resources(desired_resources);
-            agent.get_resources(taken_resources as u32);
+            agent.get_resources(taken_resources);
             agent.consume(0);
             agent.print_score();
         }

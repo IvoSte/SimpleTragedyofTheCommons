@@ -3,15 +3,15 @@ use rand::Rng;
 pub struct Action {
     // An action / action availible to an agent, tracking its own statistics
     // Number of resources to take
-    num_resources: u32,
+    num_resources: i32,
     // Expected value of that action
     expected_value: f32,
     // Number of times the action is chosen
-    times_chosen: u32,
+    times_chosen: i32,
 }
 
 impl Action {
-    fn new(num_resources: u32, expected_value: f32, times_chosen: u32) -> Action {
+    fn new(num_resources: i32, expected_value: f32, times_chosen: i32) -> Action {
         Action {
             num_resources: num_resources,
             expected_value: expected_value,
@@ -27,13 +27,13 @@ pub struct Actions {
 impl Actions {
     // Container for all availible actions. All 'non-cognitive' operations on action selection can be done here
 
-    pub fn new(num_actions: Option<u32>) -> Actions {
+    pub fn new(num_actions: Option<i32>) -> Actions {
         Actions {
             actions: Self::init_actions(num_actions.unwrap_or(5)),
         }
     }
 
-    fn init_actions(num_actions: u32) -> Vec<Action> {
+    fn init_actions(num_actions: i32) -> Vec<Action> {
         let mut actions: Vec<Action> = Vec::with_capacity(num_actions as usize);
         for action_num in 0..num_actions {
             // TODO: initialization strategy can be applied here
@@ -44,8 +44,8 @@ impl Actions {
 
     pub fn max_ev_action(&self) -> &Action {
         // This can be a lot cleaner TODO
-        let max_action: &mut Action::new(0, -99999., 0);
-        for action in &self.actions {
+        let max_action: &mut Action = Action::new(0, -99999., 0);
+        for action in &mut self.actions {
             if action.expected_value > max_action.expected_value {
                 max_action = action;
             }
@@ -68,15 +68,15 @@ impl AgentBrain {
     // Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
     pub fn new(num_actions: Option<i32>) -> AgentBrain {
         AgentBrain {
-            actions: Actions::new(num_actions.unwrap_or(5)),
+            actions: Actions::new(num_actions.unwrap_or(6)),
             // TODO find better way than declaring dummy defaults
             last_action: Action::new(0, -99999., 0),
             last_reward: 0,
         }
     }
 
-    pub fn decide_action(&self) -> u32 {
-        self.last_action = &epsilon_greedy(&self.actions, 0.1);
+    pub fn decide_action(&self) -> i32 {
+        self.last_action = epsilon_greedy(&self.actions, 0.1);
         self.last_action.times_chosen += 1;
         return self.last_action.num_resources;
     }

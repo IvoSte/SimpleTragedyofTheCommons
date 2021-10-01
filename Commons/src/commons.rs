@@ -4,7 +4,7 @@ pub struct Commons {
 }
 
 impl Commons {
-    pub fn new(resource_pool: u32, regrowth_function: fn(u32) -> u32) -> Commons {
+    pub fn new(resource_pool: u32, regrowth_function: fn(i32) -> i32) -> Commons {
         Commons {
             resource_pool: resource_pool,
             regrowth_function: regrowth_function,
