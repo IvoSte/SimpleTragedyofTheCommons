@@ -54,8 +54,8 @@ impl Actions {
         return max_action;
     }
 
-    pub fn random_action(&self) -> &Action {
-        return &self.actions.choose(&mut rand::thread_rng());
+    pub fn random_action(&self) -> Option<&Action> {
+        return self.actions.choose(&mut rand::thread_rng());
     }
 }
 
