@@ -13,7 +13,7 @@ impl Commons {
     pub fn grow(&mut self) {
         self.resource_pool = (self.regrowth_function)(self.resource_pool);
     }
-    pub fn take_resources(&mut self, value: u32) -> u32 {
+    pub fn take_resources(&mut self, value: i32) -> i32 {
         let res = if self.resource_pool >= value { value } else { self.resource_pool };
         self.resource_pool -= res;
         return res;

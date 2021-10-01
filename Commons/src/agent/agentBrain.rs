@@ -44,7 +44,7 @@ impl Actions {
 
     pub fn max_ev_action(&self) -> &Action {
         // This can be a lot cleaner TODO
-        let &mut max_action: Action::new(0, -99999., 0);
+        let max_action: &mut Action::new(0, -99999., 0);
         for action in &self.actions {
             if action.expected_value > max_action.expected_value {
                 max_action = action;
