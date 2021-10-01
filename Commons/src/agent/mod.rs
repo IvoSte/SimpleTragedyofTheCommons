@@ -1,13 +1,17 @@
-mod agentBrain;
+pub mod actions;
+pub mod agent_brain;
+pub mod rl_algs;
 
-use agentBrain::AgentBrain;
+use self::agent_brain::AgentBrain;
 
+/// The state of an agent, either alive or dead
 #[derive(PartialEq, Eq)]
 pub enum AgentState {
     ALIVE,
-    DEAD
+    DEAD,
 }
 
+/// An agent in the ToTC simulation
 pub struct Agent {
     pub id: i32,
     score: i32,
@@ -38,19 +42,19 @@ impl Agent {
 
     /// Choose how many resources to take
     pub fn decide_action(&mut self) {
-    // Q-Learning decision process
+        // Q-Learning decision process
         self.planned_action = self.brain.decide_action();
     }
-
+    /// Tell how many resource I want
     pub fn desired_resources(&self) -> i32 {
         return self.planned_action;
     }
-
+    /// Receive the resources, update the EV from the last action
     pub fn get_resources(&mut self, value: i32) {
         self.score += value;
-        self.brain.update_ev(value);
+        self.brain.update_ev(value as usize);
     }
-
+    /// Consume resources to stay alive, or perish if they are out
     pub fn consume(&mut self, value: i32) {
         self.score -= value;
         if self.score < 0 {
@@ -62,7 +66,7 @@ impl Agent {
         return self.state == AgentState::ALIVE;
     }
 
-    pub fn set_alive(&mut self) {
+    pub fn revive(&mut self) {
         self.state = AgentState::ALIVE;
     }
 
@@ -70,8 +74,8 @@ impl Agent {
         println!("Agent {} has score {}", self.id, self.score);
     }
 
-//    pub fn live(&mut self) {
-        // Advance one time step, so do things like
-        // reducing score, planning next action, etc.
-//    }
+    //    pub fn live(&mut self) {
+    // Advance one time step, so do things like
+    // reducing score, planning next action, etc.
+    //    }
 }

@@ -1,10 +1,11 @@
+/// The commons resource available to all agents in the ToTC simulation
 pub struct Commons {
-    pub resource_pool: u32,
-    pub regrowth_function: fn(u32) -> u32,
+    pub resource_pool: i32,
+    pub regrowth_function: fn(i32) -> i32,
 }
 
 impl Commons {
-    pub fn new(resource_pool: u32, regrowth_function: fn(i32) -> i32) -> Commons {
+    pub fn new(resource_pool: i32, regrowth_function: fn(i32) -> i32) -> Commons {
         Commons {
             resource_pool: resource_pool,
             regrowth_function: regrowth_function,

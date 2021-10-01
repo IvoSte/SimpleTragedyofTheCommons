@@ -1,4 +1,5 @@
 // Crates
+// extern crate dotenv;
 
 // Modules
 mod agent;
@@ -7,6 +8,8 @@ mod commons;
 // Aliases
 use agent::Agent;
 use commons::Commons;
+// use dotenv::dotenv;
+// use std::env;
 
 
 fn make_agents(n_agents: usize) -> Vec<Agent> {
@@ -45,11 +48,16 @@ fn single_generation(epochs: usize, agents: &mut Vec<Agent>, commons: &mut Commo
         single_epoch(agents, commons);
     }
     for agent in agents {
-        agent.set_alive();
+        agent.revive();
     }
 }
 
-fn run_experiment(generations: usize, epochs: usize, agents: &mut Vec<Agent>, commons: &mut Commons){
+fn run_experiment(
+    generations: usize,
+    epochs: usize,
+    agents: &mut Vec<Agent>,
+    commons: &mut Commons,
+) {
     for _ in 0..generations {
         single_generation(epochs, agents, commons);
     }
