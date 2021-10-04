@@ -9,8 +9,8 @@ mod commons;
 // Aliases
 use agent::Agent;
 use commons::Commons;
-// use dotenv::dotenv;
-// use std::env;
+use dotenv::dotenv;
+use std::env;
 
 fn make_agents(n_agents: usize) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents);
@@ -64,8 +64,9 @@ fn run_experiment(
 }
 
 fn main() {
+    dotenv::dotenv().ok();
     let n_agents: usize = 10;
-    let mut agents = make_agents(n_agents);
+    let mut agents = make_agents(n_agents); //env::var("NUMBER_OF_AGENTS").unwrap_or_default()
     let mut commons = Commons::new(100, regrow);
     run_experiment(1, 2, &mut agents, &mut commons);
 }
