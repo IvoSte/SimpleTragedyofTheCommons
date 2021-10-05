@@ -1,14 +1,17 @@
 // Crates
 // extern crate dotenv;
 extern crate float_ord;
+extern crate dotenv;
 
 // Modules
 mod agent;
 mod commons;
+mod experiment;
 
 // Aliases
 use agent::Agent;
 use commons::Commons;
+use experiment::Experiment;
 use dotenv::dotenv;
 use std::env;
 
@@ -27,46 +30,11 @@ fn regrow(current_amount: i32) -> i32 {
     return (current_amount as f32 * 1.2) as i32;
 }
 
-fn single_epoch(agents: &mut Vec<Agent>, commons: &mut Commons) {
-    for agent in agents {
-        if agent.is_alive() {
-            agent.decide_action();
-            let desired_resources = agent.desired_resources();
-            let taken_resources = commons.take_resources(desired_resources);
-            agent.get_resources(taken_resources);
-            agent.consume(0);
-            agent.print_score();
-        }
-    }
-
-    commons.grow();
-    commons.print_pool();
-}
-
-fn single_generation(epochs: usize, agents: &mut Vec<Agent>, commons: &mut Commons) {
-    for _ in 0..epochs {
-        single_epoch(agents, commons);
-    }
-    for agent in agents {
-        agent.revive();
-    }
-}
-
-fn run_experiment(
-    generations: usize,
-    epochs: usize,
-    agents: &mut Vec<Agent>,
-    commons: &mut Commons,
-) {
-    for _ in 0..generations {
-        single_generation(epochs, agents, commons);
-    }
-}
-
 fn main() {
     dotenv::dotenv().ok();
-    let n_agents: usize = 10;
-    let mut agents = make_agents(n_agents); //env::var("NUMBER_OF_AGENTS").unwrap_or_default()
+    let n_agents: usize = env::var("NUMBER_OF_AGENTS").unwrap_or_default().parse::<usize>().unwrap();
+    let mut agents = make_agents(n_agents);
     let mut commons = Commons::new(100, regrow);
-    run_experiment(1, 2, &mut agents, &mut commons);
+    let experiment = Experiment::new(1, 2, &mut agents, &mut commons);
+    experiment.run();
 }
