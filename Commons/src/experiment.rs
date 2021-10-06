@@ -4,19 +4,19 @@ use super::agent::Agent;
 use super::commons::Commons;
 
 
-pub struct Experiment {
+pub struct Experiment<'exp> {
     generations: usize,
     epochs: usize,
-    agents: &mut Vec<Agent>,
-    commons: &mut Commons,
+    agents: &'exp mut Vec<Agent>,
+    commons: &'exp mut Commons,
 }
 
-impl Experiment {
+impl Experiment<'exp> {
     pub fn new( generations: usize,
                 epochs: usize,
-                agents: &mut Vec<Agent>,
-                commons: &mut Commons,
-    ) -> Experiment {
+                agents: &'exp mut Vec<Agent>,
+                commons: &'exp mut Commons,
+    ) -> Experiment<'exp> {
         Experiment {
             generations, 
             epochs, 
