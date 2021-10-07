@@ -1,62 +1,85 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 // Aliases
 use super::agent::Agent;
 use super::commons::Commons;
+use super::statistics::{EpochStatistics, ExperimentStatistics, GenerationStatistics, Statistics};
 
-
-pub struct Experiment<'exp> {
-    generations: usize,
-    epochs: usize,
-    agents: &'exp mut Vec<Agent>,
-    commons: &'exp mut Commons,
+pub struct Experiment {
+    n_generations: usize,
+    epochs_per_gen: usize,
+    agents: Vec<Agent>,
+    commons: Commons,
 }
 
-impl Experiment<'exp> {
-    pub fn new( generations: usize,
-                epochs: usize,
-                agents: &'exp mut Vec<Agent>,
-                commons: &'exp mut Commons,
-    ) -> Experiment<'exp> {
+impl Experiment {
+    pub fn new(
+        n_generations: usize,
+        epochs_per_gen: usize,
+        agents: Vec<Agent>,
+        commons: Commons,
+    ) -> Experiment {
         Experiment {
-            generations, 
-            epochs, 
-            agents, 
-            commons,                    
+            n_generations,
+            epochs_per_gen,
+            agents,
+            commons,
         }
     }
 
+    /// Run the experiment with `self.generations` generations.
     pub fn run(&mut self) {
-    // An experiment run consists of muliple generations with the same agents.
-        for _ in 0..self.generations {
-            self.single_generation();
-        }    
-    }
-    
-    fn single_generation(&mut self) {
-    // One generation runs until the commons are exhausted and all agents are dead, or equilibrium
-        for _ in 0..self.epochs {
-            self.single_epoch();
+        for n in 0..self.n_generations {
+            self.single_generation(n).report();
         }
-        for agent in self.agents {
+    }
+
+    /// Run one generation, executing epochs until the commons
+    /// are exhausted and all agents are dead, or equilibrium.char
+    fn single_generation(&mut self, generation_number: usize) -> GenerationStatistics {
+        let mut reached_equilibrium = true;
+        let mut current_epoch = 0;
+        while current_epoch < self.epochs_per_gen {
+            self.single_epoch(current_epoch).report();
+            if self.commons.resource_pool == 0 {
+                reached_equilibrium = false;
+                break;
+            }
+            current_epoch += 1;
+        }
+        for agent in &mut self.agents {
             agent.revive();
         }
         self.commons.reset();
+
+        GenerationStatistics::new(generation_number, current_epoch, reached_equilibrium)
     }
-    
-    fn single_epoch(&mut self) {
-    // A single epoch is a single day, where each agent decides a single action and the commons gerows once
-        for agent in self.agents {
+
+    /// Execute a single epoch in the generation: each agent
+    /// executes one action, and the commons regrows.
+    fn single_epoch(&mut self, epoch_number: usize) -> EpochStatistics {
+        // Shuffle the agents vector before taking actions to avoid order-based behavior
+        let mut rng = thread_rng();
+        self.agents.shuffle(&mut rng);
+
+        for agent in &mut self.agents {
             if agent.is_alive() {
                 agent.decide_action();
                 let desired_resources = agent.desired_resources();
                 let taken_resources = self.commons.take_resources(desired_resources);
                 agent.get_resources(taken_resources);
-                agent.consume(0);
-                agent.print_score();
+                agent.consume(1);
             }
         }
-    
+
+        // TODO: Should the commons grow at th end of the epoch, or at the start?
         self.commons.grow();
-        self.commons.print_pool();
-    }        
+
+        EpochStatistics::new(
+            epoch_number,
+            self.agents.iter().filter(|&agent| agent.is_alive()).count(),
+            self.commons.resource_pool as usize,
+        )
+    }
 }

@@ -47,7 +47,9 @@ pub struct Actions {
 impl Actions {
     pub fn new(num_actions: Option<i32>) -> Actions {
         Actions {
-            actions: Self::init_actions(num_actions.unwrap_or(6)),
+            actions: Self::init_actions(
+                num_actions.unwrap_or(dotenv!("N_ACTIONS").parse::<i32>().unwrap()),
+            ),
         }
     }
 

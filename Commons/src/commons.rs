@@ -10,7 +10,7 @@ impl Commons {
     pub fn new(resource_pool: i32, regrowth_function: fn(i32) -> i32) -> Commons {
         Commons {
             init_resources: resource_pool,
-            max_resources: 2*resource_pool, // TODO make better, possibly some theoretical explanation
+            max_resources: 2 * resource_pool, // TODO make better, possibly some theoretical explanation
             resource_pool,
             regrowth_function,
         }
@@ -22,15 +22,15 @@ impl Commons {
         }
     }
     pub fn take_resources(&mut self, value: i32) -> i32 {
-        let res = if self.resource_pool >= value { value } else { self.resource_pool };
+        let res = if self.resource_pool >= value {
+            value
+        } else {
+            self.resource_pool
+        };
         self.resource_pool -= res;
         return res;
     }
     pub fn reset(&mut self) {
         self.resource_pool = self.init_resources;
-    }
-
-    pub fn print_pool(&self) {
-        println!("Resource pool: {}", self.resource_pool)
     }
 }

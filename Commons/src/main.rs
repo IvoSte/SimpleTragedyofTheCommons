@@ -1,25 +1,29 @@
 // Crates
 // extern crate dotenv;
-extern crate float_ord;
 extern crate dotenv;
+#[macro_use]
+extern crate dotenv_codegen;
+extern crate float_ord;
+#[macro_use]
+extern crate getset;
 
 // Modules
 mod agent;
 mod commons;
 mod experiment;
+mod statistics;
 
 // Aliases
 use agent::Agent;
 use commons::Commons;
-use experiment::Experiment;
 use dotenv::dotenv;
-use std::env;
+use experiment::Experiment;
 
 fn make_agents(n_agents: usize) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents);
 
     for id in 0..n_agents {
-        agents.push(Agent::new(id as i32, None));
+        agents.push(Agent::new(id, None));
     }
     return agents;
 }
@@ -31,10 +35,12 @@ fn regrow(current_amount: i32) -> i32 {
 }
 
 fn main() {
-    dotenv::dotenv().ok();
-    let n_agents: usize = env::var("NUMBER_OF_AGENTS").unwrap_or_default().parse::<usize>().unwrap();
-    let mut agents = make_agents(n_agents);
-    let mut commons = Commons::new(100, regrow);
-    let experiment = Experiment::new(1, 2, &mut agents, &mut commons);
+    dotenv().ok();
+    let mut experiment = Experiment::new(
+        dotenv!("N_GENERATIONS").parse().unwrap(),
+        dotenv!("N_EPOCHS").parse::<usize>().unwrap(),
+        make_agents(dotenv!("N_AGENTS").parse::<usize>().unwrap()),
+        Commons::new(dotenv!("INIT_POOL_SIZE").parse::<i32>().unwrap(), regrow),
+    );
     experiment.run();
 }

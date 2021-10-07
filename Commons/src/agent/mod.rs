@@ -13,7 +13,7 @@ pub enum AgentState {
 
 /// An agent in the ToTC simulation
 pub struct Agent {
-    pub id: i32,
+    pub id: usize,
     score: i32,
     pub days_lived: i32,
     state: AgentState,
@@ -28,9 +28,9 @@ impl Agent {
     ///
     /// * `id`    - An unsigned int to uniquely identify this agent
     /// * `score` - An integer that represents the agent's starting score
-    pub fn new(id: i32, score: Option<i32>) -> Agent {
+    pub fn new(id: usize, score: Option<i32>) -> Agent {
         Agent {
-            id: id,
+            id,
             // Default score value 0
             score: score.unwrap_or(0),
             days_lived: 0,
