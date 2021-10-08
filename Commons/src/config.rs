@@ -1,5 +1,15 @@
+use structopt::StructOpt;
+
+/// Search for a pattern in a file and display the lines that contain it.
+#[derive(StructOpt)]
+pub struct CommandLineArgs {
+    /// The path to the experiment configuration file
+    #[structopt(parse(from_os_str))]
+    pub config_path: Option<std::path::PathBuf>,
+}
+
 #[derive(Serialize, Deserialize)]
-pub struct TragedyConfig {
+pub struct ExperimentConfig {
     pub n_generations: i32,
     pub epochs_per_gen: i32,
     pub n_agents: i32,
@@ -9,7 +19,7 @@ pub struct TragedyConfig {
     pub regrowth_rate: f32,
 }
 
-impl Default for TragedyConfig {
+impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
             n_generations: 10,

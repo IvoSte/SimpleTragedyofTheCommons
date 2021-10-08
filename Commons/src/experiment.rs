@@ -1,5 +1,6 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::collections::HashMap;
 
 // Aliases
 use super::agent::Agent;
@@ -72,10 +73,14 @@ impl Experiment {
         // Shuffle the agents vector before taking actions to avoid order-based behavior
         let mut rng = thread_rng();
         self.agents.shuffle(&mut rng);
+
+        let mut chosen_actions: HashMap<i32, i32> = HashMap::new();
+
         for agent in &mut self.agents {
             if agent.is_alive() {
                 agent.decide_action();
                 let desired_resources = agent.desired_resources();
+                *chosen_actions.entry(desired_resources).or_default() += 1;
                 let taken_resources = self.commons.take_resources(desired_resources);
                 agent.get_resources(taken_resources);
                 agent.consume(1);
@@ -90,6 +95,7 @@ impl Experiment {
             epoch_number,
             self.agents.iter().filter(|&agent| agent.is_alive()).count() as i32,
             self.commons.resource_pool,
+            chosen_actions,
         )
     }
 }

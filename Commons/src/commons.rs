@@ -8,7 +8,12 @@ pub struct Commons {
 }
 
 impl Commons {
-    pub fn new(resource_pool: i32, max_pool: i32, regrowth_function: fn(i32, f32) -> i32, regrowth_rate: f32) -> Commons {
+    pub fn new(
+        resource_pool: i32,
+        max_pool: i32,
+        regrowth_function: fn(i32, f32) -> i32,
+        regrowth_rate: f32,
+    ) -> Commons {
         Commons {
             init_resources: resource_pool,
             max_resources: max_pool, // TODO make better, possibly some theoretical explanation
