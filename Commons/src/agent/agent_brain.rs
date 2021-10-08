@@ -9,7 +9,7 @@ pub struct AgentBrain {
 }
 
 impl AgentBrain {
-    pub fn new(num_actions: Option<i32>) -> AgentBrain {
+    pub fn new(num_actions: i32) -> AgentBrain {
         AgentBrain {
             actions: Actions::new(num_actions),
             last_action_idx: None,
