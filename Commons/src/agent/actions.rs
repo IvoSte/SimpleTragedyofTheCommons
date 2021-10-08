@@ -45,11 +45,9 @@ pub struct Actions {
 
 /// Container for all availible actions. All 'non-cognitive' operations on action selection can be done here
 impl Actions {
-    pub fn new(num_actions: Option<i32>) -> Actions {
+    pub fn new(num_actions: i32) -> Actions {
         Actions {
-            actions: Self::init_actions(
-                num_actions.unwrap_or(dotenv!("N_ACTIONS").parse::<i32>().unwrap()),
-            ),
+            actions: Self::init_actions(num_actions),
         }
     }
 

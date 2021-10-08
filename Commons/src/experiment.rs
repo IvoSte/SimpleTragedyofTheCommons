@@ -7,16 +7,16 @@ use super::commons::Commons;
 use super::statistics::{EpochStatistics, ExperimentStatistics, GenerationStatistics, Statistics};
 
 pub struct Experiment {
-    n_generations: usize,
-    epochs_per_gen: usize,
+    n_generations: i32,
+    epochs_per_gen: i32,
     agents: Vec<Agent>,
     commons: Commons,
 }
 
 impl Experiment {
     pub fn new(
-        n_generations: usize,
-        epochs_per_gen: usize,
+        n_generations: i32,
+        epochs_per_gen: i32,
         agents: Vec<Agent>,
         commons: Commons,
     ) -> Experiment {
@@ -37,12 +37,12 @@ impl Experiment {
 
     /// Run one generation, executing epochs until the commons
     /// are exhausted and all agents are dead, or equilibrium.char
-    fn single_generation(&mut self, generation_number: usize) -> GenerationStatistics {
+    fn single_generation(&mut self, generation_number: i32) -> GenerationStatistics {
         let mut reached_equilibrium = true;
         let mut current_epoch = 0;
         while current_epoch < self.epochs_per_gen {
             self.single_epoch(current_epoch).report();
-            if self.commons.resource_pool == 0 {
+            if self.agents.iter().filter(|&agent| agent.is_alive()).count() == 0 {
                 reached_equilibrium = false;
                 break;
             }
@@ -58,7 +58,7 @@ impl Experiment {
 
     /// Execute a single epoch in the generation: each agent
     /// executes one action, and the commons regrows.
-    fn single_epoch(&mut self, epoch_number: usize) -> EpochStatistics {
+    fn single_epoch(&mut self, epoch_number: i32) -> EpochStatistics {
         // Shuffle the agents vector before taking actions to avoid order-based behavior
         let mut rng = thread_rng();
         self.agents.shuffle(&mut rng);
@@ -78,8 +78,8 @@ impl Experiment {
 
         EpochStatistics::new(
             epoch_number,
-            self.agents.iter().filter(|&agent| agent.is_alive()).count(),
-            self.commons.resource_pool as usize,
+            self.agents.iter().filter(|&agent| agent.is_alive()).count() as i32,
+            self.commons.resource_pool,
         )
     }
 }
