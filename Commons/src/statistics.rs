@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+
+use super::Agent;
+
 pub trait Statistics {
     fn report(&self);
 }
@@ -6,14 +10,21 @@ pub struct EpochStatistics {
     epoch_number: i32,
     alive_agents: i32,
     resources_in_pool: i32,
+    chosen_actions: HashMap<i32, i32>,
 }
 
 impl EpochStatistics {
-    pub fn new(epoch_number: i32, alive_agents: i32, resources_in_pool: i32) -> EpochStatistics {
+    pub fn new(
+        epoch_number: i32,
+        alive_agents: i32,
+        resources_in_pool: i32,
+        chosen_actions: HashMap<i32, i32>,
+    ) -> EpochStatistics {
         EpochStatistics {
             epoch_number,
             alive_agents,
             resources_in_pool,
+            chosen_actions,
         }
     }
 }
