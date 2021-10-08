@@ -52,15 +52,22 @@ impl Agent {
     /// Receive the resources, update the EV from the last action
     pub fn get_resources(&mut self, value: i32) {
         self.score += value;
-        self.brain.update_ev(value as usize);
+        self.brain.set_last_reward(value);
     }
     /// Consume resources to stay alive, or perish if they are out
     pub fn consume(&mut self, value: i32) {
         self.score -= value;
+        self.brain.decrease_last_reward(value);
         if self.score < 0 {
             self.state = AgentState::DEAD;
+            self.brain.decrease_last_reward(1000);// TODO config punish value
         }
     }
+    /// Update expected values
+    pub fn learn(&mut self) {
+        self.brain.update_ev(self.planned_action as usize);
+    }
+
 
     pub fn is_alive(&self) -> bool {
         return self.state == AgentState::ALIVE;

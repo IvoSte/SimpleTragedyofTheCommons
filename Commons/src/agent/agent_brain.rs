@@ -1,5 +1,5 @@
 use crate::agent::actions::Actions;
-use crate::agent::rl_algs::bandit;
+use crate::agent::rl_algs::{bandit, update_bandit};
 
 /// Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
 pub struct AgentBrain {
@@ -29,15 +29,14 @@ impl AgentBrain {
     }
 
     pub fn update_ev(&mut self, action_idx: usize) {
-        // TODO ended here. Update EV of the chosen action with the new value.
-        // Average received value with amount of times action is chosen.
+        
+    }
 
-        // Dummy function updating the value only to actual value, for testing purposes TODO remove
-        // New estimate = old estimate * stepsize(old estimate - new value)
-        let stepsize = 0.1;
-        let old_estimate = self.actions[action_idx].get_expected_value();
-        let new_estimate = old_estimate * stepsize * (old_estimate - self.last_reward as f32);
+    pub fn set_last_reward(&mut self, value: i32) {
+        self.last_reward = value;
+    }
 
-        self.actions[action_idx].set_expected_value(new_estimate);
+    pub fn decrease_last_reward(&mut self, subtract: i32) {
+        self.last_reward -= subtract;
     }
 }
