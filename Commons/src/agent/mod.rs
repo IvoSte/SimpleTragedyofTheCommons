@@ -60,7 +60,7 @@ impl Agent {
         self.brain.decrease_last_reward(value);
         if self.score < 0 {
             self.state = AgentState::DEAD;
-            self.brain.decrease_last_reward(1000);// TODO config punish value
+            self.brain.decrease_last_reward(10000);// TODO config punish value
         }
     }
     /// Update expected values
@@ -75,6 +75,10 @@ impl Agent {
 
     pub fn revive(&mut self) {
         self.state = AgentState::ALIVE;
+    }
+
+    pub fn report_action_evs(&self) {
+        self.brain.report_action_evs();
     }
 
     pub fn print_score(&self) {

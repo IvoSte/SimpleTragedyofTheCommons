@@ -31,8 +31,11 @@ impl Experiment {
     /// Run the experiment with `self.generations` generations.
     pub fn run(&mut self) {
         for n in 0..self.n_generations {
-            self.single_generation(n).report();
+            let result = self.single_generation(n);
+            //result.report();
         }
+        self.agents[0].print_score();
+        self.agents[0].report_action_evs();    
     }
 
     /// Run one generation, executing epochs until the commons
@@ -42,7 +45,11 @@ impl Experiment {
         let mut current_epoch = 0;
         while current_epoch < self.epochs_per_gen {
             let results = self.single_epoch(current_epoch);
-            results.report();
+            
+            //results.report();
+            //self.agents[0].print_score();
+            //self.agents[0].report_action_evs();    
+            
             if self.agents.iter().filter(|&agent| agent.is_alive()).count() == 0 {
                 reached_equilibrium = false;
                 break;
@@ -53,7 +60,9 @@ impl Experiment {
             agent.revive();
         }
         self.commons.reset();
-
+        if reached_equilibrium == true {
+            println!("Reached equilibrium at epoch {}", current_epoch);
+        }
         GenerationStatistics::new(generation_number, current_epoch, reached_equilibrium)
     }
 
@@ -63,7 +72,6 @@ impl Experiment {
         // Shuffle the agents vector before taking actions to avoid order-based behavior
         let mut rng = thread_rng();
         self.agents.shuffle(&mut rng);
-
         for agent in &mut self.agents {
             if agent.is_alive() {
                 agent.decide_action();

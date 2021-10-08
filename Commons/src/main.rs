@@ -35,12 +35,20 @@ fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
 }
 
 fn main() {
-    let cfg: TragedyConfig = confy::load("tragedy-of-the-commons").unwrap();
+    //let cfg: TragedyConfig = confy::load("tragedy-of-the-commons").unwrap();
+    let cfg = TragedyConfig { 
+                n_generations: 100000, 
+                epochs_per_gen: 2000, 
+                n_agents: 1, 
+                n_actions: 9, 
+                init_pool_size: 5, 
+                max_pool_size: 9, 
+                regrowth_rate: 1.5 };
     let mut experiment = Experiment::new(
         cfg.n_generations,
         cfg.epochs_per_gen,
         make_agents(cfg.n_agents, cfg.n_actions),
-        Commons::new(cfg.init_pool_size as i32, cfg.max_pool_size as i32, regrow, cgf.regrowth_rate),
+        Commons::new(cfg.init_pool_size as i32, cfg.max_pool_size as i32, regrow, cfg.regrowth_rate as f32),
     );
     experiment.run();
 }

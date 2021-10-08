@@ -8,7 +8,7 @@ use rand::Rng;
 //}
 
 pub fn bandit(actions: &mut Actions) -> &mut Action {
-    epsilon_greedy(actions, 0.1)
+    epsilon_greedy(actions, 0.0)
 }
 
 pub fn update_bandit(actions: &mut Actions, action_idx: usize, reward: i32) {

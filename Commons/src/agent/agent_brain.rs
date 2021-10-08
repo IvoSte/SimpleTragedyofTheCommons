@@ -39,4 +39,8 @@ impl AgentBrain {
     pub fn decrease_last_reward(&mut self, subtract: i32) {
         self.last_reward -= subtract;
     }
+
+    pub fn report_action_evs(&self) {
+        self.actions.report();
+    }
 }

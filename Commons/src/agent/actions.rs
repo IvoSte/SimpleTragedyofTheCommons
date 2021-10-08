@@ -36,6 +36,10 @@ impl Action {
     pub fn set_expected_value(&mut self, value: f32) {
         self.expected_value = value;
     }
+
+    pub fn report(&self) {
+        println!("NR: {} EV: {} NC: {}", self.num_resources, self.expected_value, self.times_chosen);
+    }
 }
 
 pub struct Actions {
@@ -60,7 +64,7 @@ impl Actions {
         return actions;
     }
 
-    pub fn max_ev_action(&mut self) -> &mut Action {
+    pub fn max_ev_action(&mut self) -> &mut Action { //TODO needs tiebreaker contingency, for initial selection
         return self
             .actions
             .iter_mut()
@@ -70,6 +74,12 @@ impl Actions {
 
     pub fn random_action(&mut self) -> &mut Action {
         return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
+    }
+
+    pub fn report(&self) {
+        for action in &self.actions {
+            action.report();
+        }
     }
 }
 
