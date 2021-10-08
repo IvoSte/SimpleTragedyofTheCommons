@@ -29,7 +29,7 @@ impl AgentBrain {
     }
 
     pub fn update_ev(&mut self, action_idx: usize) {
-        
+        update_bandit(&mut self.actions, action_idx, self.last_reward);
     }
 
     pub fn set_last_reward(&mut self, value: i32) {

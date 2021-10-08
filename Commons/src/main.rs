@@ -28,10 +28,10 @@ fn make_agents(n_agents: i32, n_actions: i32) -> Vec<Agent> {
     return agents;
 }
 
-fn regrow(current_amount: i32) -> i32 {
+fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
     // TODO: pay attention that this makes sense --> whole integers and floats mixed
     // Cap at certain amount (?)
-    return (current_amount as f32 * 1.2) as i32;
+    return (current_amount as f32 * regrowth_rate) as i32;
 }
 
 fn main() {
@@ -40,7 +40,7 @@ fn main() {
         cfg.n_generations,
         cfg.epochs_per_gen,
         make_agents(cfg.n_agents, cfg.n_actions),
-        Commons::new(cfg.init_pool_size as i32, regrow),
+        Commons::new(cfg.init_pool_size as i32, cfg.max_pool_size as i32, regrow, cgf.regrowth_rate),
     );
     experiment.run();
 }

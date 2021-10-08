@@ -3,22 +3,21 @@ use rand::Rng;
 
 
 //pub mod rl_mod {
-pub fn q_learning() -> &mut Action {
+//pub fn q_learning() -> &mut Action {
 
-}
+//}
 
 pub fn bandit(actions: &mut Actions) -> &mut Action {
     epsilon_greedy(actions, 0.1)
 }
 
-pub fn update_bandit(actions: Actions, action_idx: usize, reward: i32) -> &mut Action{
-    // New estimate = old estimate + stepsize(old estimate - new value)
+pub fn update_bandit(actions: &mut Actions, action_idx: usize, reward: i32) {
+    // New estimate = old estimate + stepsize(target - old estimate)
     let stepsize = 0.1;
     let old_estimate = actions[action_idx].get_expected_value();
-    let new_estimate = old_estimate + (stepsize * (old_estimate - reward as f32));
+    let new_estimate = old_estimate + (stepsize * (reward as f32 - old_estimate));
 
     actions[action_idx].set_expected_value(new_estimate);
-
 }
 
 // TODO should this be inside or outside the brain? Outside seems good, but possibly better inside.

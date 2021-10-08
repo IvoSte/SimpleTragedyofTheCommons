@@ -41,7 +41,8 @@ impl Experiment {
         let mut reached_equilibrium = true;
         let mut current_epoch = 0;
         while current_epoch < self.epochs_per_gen {
-            self.single_epoch(current_epoch).report();
+            let results = self.single_epoch(current_epoch);
+            results.report();
             if self.agents.iter().filter(|&agent| agent.is_alive()).count() == 0 {
                 reached_equilibrium = false;
                 break;
@@ -70,6 +71,7 @@ impl Experiment {
                 let taken_resources = self.commons.take_resources(desired_resources);
                 agent.get_resources(taken_resources);
                 agent.consume(1);
+                agent.learn();
             }
         }
 
