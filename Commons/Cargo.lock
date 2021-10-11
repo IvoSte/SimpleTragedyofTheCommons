@@ -41,6 +41,7 @@ dependencies = [
  "rand",
  "serde",
  "structopt",
+ "strum",
 ]
 
 [[package]]
@@ -275,6 +276,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "strum"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "530efb820d53b712f4e347916c5e7ed20deb76a4f0457943b3182fb889b06d2c"
 
 [[package]]
 name = "syn"

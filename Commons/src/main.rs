@@ -14,6 +14,7 @@ mod commons;
 mod config;
 mod experiment;
 mod statistics;
+pub mod structs;
 
 // Aliases
 use agent::Agent;

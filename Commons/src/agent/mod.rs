@@ -1,22 +1,24 @@
 pub mod actions;
 pub mod agent_brain;
 pub mod rl_algs;
+pub mod structs;
 
 use self::agent_brain::AgentBrain;
-
+use 
 /// The state of an agent, either alive or dead
 #[derive(PartialEq, Eq)]
-pub enum AgentState {
+pub enum AgentVitalState {
     ALIVE,
     DEAD,
 }
+
 
 /// An agent in the ToTC simulation
 pub struct Agent {
     pub id: i32,
     score: i32,
     pub days_lived: i32,
-    state: AgentState,
+    vitals: AgentVitalState,
     planned_action: i32,
     brain: AgentBrain,
 }
@@ -34,7 +36,7 @@ impl Agent {
             // Default score value 0
             score: score.unwrap_or(0),
             days_lived: 0,
-            state: AgentState::ALIVE,
+            vitals: AgentVitalState::ALIVE,
             planned_action: 0,
             brain: AgentBrain::new(n_actions),
         }
@@ -59,7 +61,7 @@ impl Agent {
         self.score -= value;
         self.brain.decrease_last_reward(value);
         if self.score < 0 {
-            self.state = AgentState::DEAD;
+            self.vitals = AgentVitalState::DEAD;
             self.brain.decrease_last_reward(10000);// TODO config punish value
         }
     }
@@ -70,11 +72,11 @@ impl Agent {
 
 
     pub fn is_alive(&self) -> bool {
-        return self.state == AgentState::ALIVE;
+        return self.vitals == AgentVitalState::ALIVE;
     }
 
     pub fn revive(&mut self) {
-        self.state = AgentState::ALIVE;
+        self.vitals = AgentVitalState::ALIVE;
     }
 
     pub fn report_action_evs(&self) {
