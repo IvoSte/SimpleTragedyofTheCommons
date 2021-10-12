@@ -27,7 +27,13 @@ mod structs {
         pub fn to_string(&self) -> String {
             String::from(format!("{} {}", &self.commons_state.to_string(), &self.score_state.to_string()))
         }
-
+        // Maybe wierd way to initialize?
+        pub fn from_values(commons_value: i32, score_value: i32) -> AgentState {
+            let agentstate = AgentState {commons_state: ResourceState::MEDIUM, score_state: ResourceState::MEDIUM};
+            agentstate.map_commons(commons_value);
+            agentstate.map_score(score_value);
+            return agentstate;
+        }
         // this is a mess, refactor TODO. should be some global config map dynamically determined using key values/bounds
         pub fn map_commons(&mut self, commons_value: i32) {
             if commons_value < 3 {

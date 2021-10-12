@@ -50,7 +50,7 @@ impl AgentBrain {
     }
 
     pub fn update_ev(&mut self, action_idx: usize) {
-        update_bandit(&mut self.actions, action_idx, self.last_reward);
+        self.update_behaviour_interface(action_idx);
     }
 
     fn update_behaviour_interface(&mut self, action_idx: usize) {
@@ -75,13 +75,7 @@ impl AgentBrain {
 
     pub fn update_state(&mut self, pool: i32, score: i32) {
         self.previous_state = self.current_state;
-        // TODO implement this
-        // match self.current_state {
-        //     None => 
-        //     Some(AgentState) => 
-        // }
         // better encapsulate this, agent brain should not know the size of the pool
-        self.current_state.map_pool(pool);
-        self.current_state.map_score(score);
+        self.current_state = AgentState::from_values(pool, score);
     }
 }

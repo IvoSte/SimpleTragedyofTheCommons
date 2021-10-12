@@ -84,6 +84,7 @@ impl Experiment {
                 let taken_resources = self.commons.take_resources(desired_resources);
                 agent.get_resources(taken_resources);
                 agent.consume(1);
+                agent.update_state(self.commons.resource_pool); // TODO design descision, maybe update after all agents are done. See significance / difference to ResourceState of pool
                 agent.learn();
             }
         }

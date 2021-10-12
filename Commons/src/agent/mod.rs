@@ -70,6 +70,9 @@ impl Agent {
         self.brain.update_ev(self.planned_action as usize);
     }
 
+    pub fn update_state(&mut self, pool_value: i32) {
+        self.brain.update_state(pool_value, self.score);
+    }
 
     pub fn is_alive(&self) -> bool {
         return self.vitals == AgentVitalState::ALIVE;
