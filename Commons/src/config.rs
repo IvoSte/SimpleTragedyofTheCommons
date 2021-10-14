@@ -22,7 +22,7 @@ pub struct ExperimentConfig {
 impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
-            n_generations: 10,
+            n_generations: 100,
             epochs_per_gen: 200,
             n_agents: 5,
             n_actions: 4,

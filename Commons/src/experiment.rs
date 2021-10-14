@@ -33,7 +33,7 @@ impl Experiment {
     pub fn run(&mut self) {
         for n in 0..self.n_generations {
             let result = self.single_generation(n);
-            //result.report();
+            result.report();
         }
         self.agents[0].print_score();
         self.agents[0].report_action_evs();    
@@ -44,6 +44,11 @@ impl Experiment {
     fn single_generation(&mut self, generation_number: i32) -> GenerationStatistics {
         let mut reached_equilibrium = true;
         let mut current_epoch = 0;
+
+        for agent in &mut self.agents {
+            agent.update_state(self.commons.resource_pool);
+        }
+
         while current_epoch < self.epochs_per_gen {
             let results = self.single_epoch(current_epoch);
             

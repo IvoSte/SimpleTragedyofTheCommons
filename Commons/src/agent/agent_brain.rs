@@ -1,9 +1,8 @@
 //use std::num;
 
 use crate::agent::actions::{Action, Actions};
-use crate::agent::rl_algs::{bandit, update_bandit, qlearning, update_qlearning};
-use crate::agent::structs::{AgentState, QTable, AgentType};
-
+use crate::agent::rl_algs::{bandit, qlearning, update_bandit, update_qlearning};
+use crate::agent::structs::{AgentState, AgentType, QTable};
 
 /// Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
 pub struct AgentBrain {
@@ -13,7 +12,7 @@ pub struct AgentBrain {
     last_reward: i32,
     current_state: Option<AgentState>,
     previous_state: Option<AgentState>,
-    behaviour_type : AgentType,
+    behaviour_type: AgentType,
 }
 
 impl AgentBrain {
@@ -29,21 +28,13 @@ impl AgentBrain {
         }
     }
 
-    // fn init_qtable(&mut self, n_actions: i32) {
-    //     match self.behaviour_type {
-    //         AgentType::QLEARNING => init_qtable(n_actions),
-    //         AgentType::BANDIT => None
-    //     }
-    // }
-
     pub fn decide_action(&mut self) -> i32 {
         // replace egreedy with rl alg
         let chosen_action = self.decision_behaviour_interface();
         // Increment amount this action has been chosen
         chosen_action.increment_chosen(1);
         // remember which one we chose this round
-        let index = chosen_action.get_num_resources();
-        self.last_action_idx = Some(index as usize);
+        // self.last_action_idx = Some(index as usize);
         // Return the chosen integer of resources
         return chosen_action.get_num_resources();
     }
@@ -51,7 +42,10 @@ impl AgentBrain {
     fn decision_behaviour_interface(&mut self) -> &mut Action {
         match self.behaviour_type {
             AgentType::BANDIT => bandit(&mut self.actions),
-            AgentType::QLEARNING => qlearning(&mut self.q_table, self.current_state.unwrap().to_string().clone()),
+            AgentType::QLEARNING => qlearning(
+                &mut self.q_table,
+                self.current_state.unwrap().to_string().clone(),
+            ),
         }
     }
 
@@ -62,8 +56,15 @@ impl AgentBrain {
     fn update_behaviour_interface(&mut self, action_idx: usize) {
         match self.behaviour_type {
             AgentType::BANDIT => update_bandit(&mut self.actions, action_idx, self.last_reward),
-            AgentType::QLEARNING => update_qlearning(&mut self.q_table, &self.previous_state.unwrap(), &self.current_state.unwrap(), 
-                                                    action_idx, self.last_reward, 0.2, 0.9),
+            AgentType::QLEARNING => update_qlearning(
+                &mut self.q_table,
+                &self.previous_state.unwrap(),
+                &self.current_state.unwrap(),
+                action_idx,
+                self.last_reward,
+                0.2,
+                0.9,
+            ),
         }
     }
 
@@ -80,7 +81,7 @@ impl AgentBrain {
     }
 
     pub fn update_state(&mut self, pool: i32, score: i32) {
-        self.previous_state = self.current_state;
+        self.previous_state = self.current_state.clone();
         // better encapsulate this, agent brain should not know the size of the pool
         self.current_state = Some(AgentState::from_values(pool, score));
     }

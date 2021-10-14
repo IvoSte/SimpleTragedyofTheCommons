@@ -9,7 +9,7 @@ pub enum AgentType {
     QLEARNING,
 }
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Clone, Copy)]
 pub enum ResourceState {
     LOW,
     MEDIUM,
@@ -21,7 +21,7 @@ impl fmt::Display for ResourceState {
         write!(f, "{:?}", self)
     }
 }
-
+#[derive(Clone, Copy)]
 pub struct AgentState {
     commons_state: ResourceState,
     score_state: ResourceState,
