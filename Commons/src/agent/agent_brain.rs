@@ -42,7 +42,8 @@ impl AgentBrain {
         // Increment amount this action has been chosen
         chosen_action.increment_chosen(1);
         // remember which one we chose this round
-        self.last_action_idx = Some(chosen_action.get_num_resources() as usize);
+        let index = chosen_action.get_num_resources();
+        self.last_action_idx = Some(index as usize);
         // Return the chosen integer of resources
         return chosen_action.get_num_resources();
     }

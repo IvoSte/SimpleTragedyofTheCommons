@@ -22,7 +22,7 @@ impl Action {
     }
 
     // Instead of updating an action, create a new one.
-    pub fn new_from_with_ev(action: Action, expected_value: f32) -> Action {
+    pub fn new_from_with_ev(action: &Action, expected_value: f32) -> Action {
         Action { 
             num_resources: action.num_resources, 
             expected_value: expected_value, 

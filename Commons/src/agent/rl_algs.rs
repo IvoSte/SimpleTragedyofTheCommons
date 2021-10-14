@@ -17,11 +17,11 @@ pub fn update_qlearning(qtable: &mut QTable, old_state: &AgentState, new_state: 
     let max_next_ev: f32 = qtable.get(new_state.to_string()).max_ev_action().get_expected_value();
     // update ev
     let new_ev: f32 = old_ev + (alpha * (reward as f32 + (gamma * max_next_ev) - old_ev));
-    let old_action = qtable.get(old_state.to_string())[action_idx];
-    let new_action = Action::new_from_with_ev(old_action, new_ev);
+    //let old_action = &qtable.get(old_state.to_string())[action_idx];
+    //let new_action = Action::new_from_with_ev(old_action, new_ev);
     
-    qtable.update_action(old_state.to_string(), action_idx, new_action);
-    //qtable.get(old_state.to_string())[action_idx].set_expected_value(new_ev);
+    //qtable.update_action(old_state.to_string(), action_idx, new_action);
+    qtable.get(old_state.to_string())[action_idx].set_expected_value(new_ev);
     //not maybe make a new one and dont get mut
 }
 
