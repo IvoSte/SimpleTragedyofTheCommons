@@ -4,7 +4,8 @@ pub mod rl_algs;
 pub mod structs;
 
 use self::agent_brain::AgentBrain;
-use 
+use self::structs::{AgentType};
+
 /// The state of an agent, either alive or dead
 #[derive(PartialEq, Eq)]
 pub enum AgentVitalState {
@@ -38,7 +39,7 @@ impl Agent {
             days_lived: 0,
             vitals: AgentVitalState::ALIVE,
             planned_action: 0,
-            brain: AgentBrain::new(n_actions),
+            brain: AgentBrain::new(n_actions, AgentType::QLEARNING),
         }
     }
 

@@ -1,11 +1,9 @@
-use crate::agent::actions::Actions;
-use crate::agent::rl_algs::{bandit, update_bandit};
-pub mod structs;
+//use std::num;
 
-enum AgentType {
-    BANDIT,
-    QLEARNING,
-}
+use crate::agent::actions::{Action, Actions};
+use crate::agent::rl_algs::{bandit, update_bandit, qlearning, update_qlearning};
+use crate::agent::structs::{AgentState, QTable, AgentType};
+
 
 /// Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
 pub struct AgentBrain {
@@ -19,17 +17,24 @@ pub struct AgentBrain {
 }
 
 impl AgentBrain {
-    pub fn new(num_actions: i32) -> AgentBrain {
+    pub fn new(num_actions: i32, agent_type: AgentType) -> AgentBrain {
         AgentBrain {
             actions: Actions::new(num_actions),
-            q_table: QTable,
+            q_table: QTable::new(num_actions),
             last_action_idx: None,
             last_reward: 0,
             current_state: None,
             previous_state: None,
-            behaviour_type: AgentType::BANDIT,
+            behaviour_type: agent_type,
         }
     }
+
+    // fn init_qtable(&mut self, n_actions: i32) {
+    //     match self.behaviour_type {
+    //         AgentType::QLEARNING => init_qtable(n_actions),
+    //         AgentType::BANDIT => None
+    //     }
+    // }
 
     pub fn decide_action(&mut self) -> i32 {
         // replace egreedy with rl alg
@@ -45,7 +50,7 @@ impl AgentBrain {
     fn decision_behaviour_interface(&mut self) -> &mut Action {
         match self.behaviour_type {
             AgentType::BANDIT => bandit(&mut self.actions),
-            AgentType::QLEARNING => qlearning(&mut self.q_table),
+            AgentType::QLEARNING => qlearning(&mut self.q_table, self.current_state.unwrap().to_string().clone()),
         }
     }
 
@@ -56,7 +61,7 @@ impl AgentBrain {
     fn update_behaviour_interface(&mut self, action_idx: usize) {
         match self.behaviour_type {
             AgentType::BANDIT => update_bandit(&mut self.actions, action_idx, self.last_reward),
-            AgentType::QLEARNING => update_qlearning(&mut self.q_table, &self.previous_state, &self.current_state, 
+            AgentType::QLEARNING => update_qlearning(&mut self.q_table, &self.previous_state.unwrap(), &self.current_state.unwrap(), 
                                                     action_idx, self.last_reward, 0.2, 0.9),
         }
     }
@@ -76,6 +81,6 @@ impl AgentBrain {
     pub fn update_state(&mut self, pool: i32, score: i32) {
         self.previous_state = self.current_state;
         // better encapsulate this, agent brain should not know the size of the pool
-        self.current_state = AgentState::from_values(pool, score);
+        self.current_state = Some(AgentState::from_values(pool, score));
     }
 }

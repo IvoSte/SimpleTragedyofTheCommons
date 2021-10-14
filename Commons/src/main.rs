@@ -1,11 +1,11 @@
 // Crates
 extern crate confy;
 extern crate float_ord;
-#[macro_use]
+//#[macro_use]
 extern crate getset;
 #[macro_use]
 extern crate serde;
-#[macro_use]
+//#[macro_use]
 extern crate structopt;
 
 // Modules
@@ -14,7 +14,6 @@ mod commons;
 mod config;
 mod experiment;
 mod statistics;
-pub mod structs;
 
 // Aliases
 use agent::Agent;

@@ -1,27 +1,12 @@
+use std::collections::HashMap;
 use crate::agent::actions::{Action, Actions};
+use crate::agent::structs::{ResourceState, AgentState, QTable};
 use rand::Rng;
 
 
-//pub mod rl_mod {
-//pub fn q_learning() -> &mut Action {
 
-//}
-
-pub fn init_qtable(n_actions: i32) -> &mut QTable {
-    let mut q_table: HashMap<String, Actions> = HashMap::new();
-    // loop over all state permutations
-    for state_1 in ResourceState::iter() {
-        for state_2 in ResourceState::iter() {
-            // state permutation is the key in the table
-            let statekey = String::from(format!("{} {}", state_1.to_string(), state_2.to_string()));
-            // init new actions per possible state
-            q_table.insert(statekey, Actions::new(n_actions));
-        }
-    }
-}
-
-pub fn qlearning(qtable: &mut QTable, state: &AgentState) -> &mut Action {
-    epsilon_greedy(qtable.get(&state.to_string()), 0.1)
+pub fn qlearning(qtable: &mut QTable, state: String) -> &mut Action {
+    epsilon_greedy(qtable.get(state), 0.1)
 }
 
 pub fn update_qlearning(qtable: &mut QTable, old_state: &AgentState, new_state: &AgentState, 
@@ -31,8 +16,13 @@ pub fn update_qlearning(qtable: &mut QTable, old_state: &AgentState, new_state: 
     // off-policy best new action
     let max_next_ev: f32 = qtable.get(new_state.to_string()).max_ev_action().get_expected_value();
     // update ev
-    let new_ev: f32 = old_ev + (alpha * (reward + (gamma * max_next_ev) - old_ev));
-    qtable.get(old_state.to_string())[action_idx].set_expected_value(new_ev);
+    let new_ev: f32 = old_ev + (alpha * (reward as f32 + (gamma * max_next_ev) - old_ev));
+    let old_action = qtable.get(old_state.to_string())[action_idx];
+    let new_action = Action::new_from_with_ev(old_action, new_ev);
+    
+    qtable.update_action(old_state.to_string(), action_idx, new_action);
+    //qtable.get(old_state.to_string())[action_idx].set_expected_value(new_ev);
+    //not maybe make a new one and dont get mut
 }
 
 pub fn bandit(actions: &mut Actions) -> &mut Action {

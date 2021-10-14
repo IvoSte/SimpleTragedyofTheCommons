@@ -21,6 +21,15 @@ impl Action {
         }
     }
 
+    // Instead of updating an action, create a new one.
+    pub fn new_from_with_ev(action: Action, expected_value: f32) -> Action {
+        Action { 
+            num_resources: action.num_resources, 
+            expected_value: expected_value, 
+            times_chosen: action.times_chosen
+        }
+    }
+
     pub fn increment_chosen(&mut self, n: i32) {
         self.times_chosen += n;
     }
@@ -74,6 +83,11 @@ impl Actions {
 
     pub fn random_action(&mut self) -> &mut Action {
         return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
+    }
+
+    pub fn replace(&mut self, index: usize, action: Action) {
+        self.actions.remove(index);
+        self.actions.insert(index, action);
     }
 
     pub fn report(&self) {
