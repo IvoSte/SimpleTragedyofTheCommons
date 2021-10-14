@@ -22,12 +22,12 @@ pub struct ExperimentConfig {
 impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
-            n_generations: 100,
+            n_generations: 1000,
             epochs_per_gen: 200,
-            n_agents: 5,
-            n_actions: 4,
-            init_pool_size: 10,
-            max_pool_size: 60,
+            n_agents: 100,
+            n_actions: 5,
+            init_pool_size: 12,
+            max_pool_size: 12,
             regrowth_rate: 1.2,
         }
     }

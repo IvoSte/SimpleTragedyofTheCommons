@@ -76,8 +76,19 @@ impl AgentBrain {
         self.last_reward -= subtract;
     }
 
+    pub fn report(&self) {
+        match self.behaviour_type {
+            AgentType::BANDIT => self.report_action_evs(),
+            AgentType::QLEARNING => self.report_q_table()
+        }
+    }
+
     pub fn report_action_evs(&self) {
         self.actions.report();
+    }
+
+    pub fn report_q_table(&self) {
+        self.q_table.report();
     }
 
     pub fn update_state(&mut self, pool: i32, score: i32) {

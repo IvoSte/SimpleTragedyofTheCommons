@@ -84,7 +84,7 @@ impl Agent {
     }
 
     pub fn report_action_evs(&self) {
-        self.brain.report_action_evs();
+        self.brain.report();
     }
 
     pub fn print_score(&self) {

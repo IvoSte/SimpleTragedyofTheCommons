@@ -95,6 +95,13 @@ impl QTable {
         }
     }
 
+    pub fn report(&self) {
+        for (key, value) in &self.state_action_pairs {
+            println!("state: {:?}", key);
+            value.report();
+        }
+    }
+
     // pub fn update_action(&mut self, key: String, index: usize, value: Action) {
     //     self.state_action_pairs
     //         .get(&key)
