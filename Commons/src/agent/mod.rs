@@ -63,7 +63,7 @@ impl Agent {
         self.brain.decrease_last_reward(value);
         if self.score < 0 {
             self.vitals = AgentVitalState::DEAD;
-            self.brain.decrease_last_reward(10000);// TODO config punish value
+            self.brain.death_punishment();
         }
     }
     /// Update expected values

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use super::Agent;
 
 pub trait Statistics {
     fn report(&self);
@@ -8,7 +7,7 @@ pub trait Statistics {
 
 pub struct EpochStatistics {
     epoch_number: i32,
-    alive_agents: i32,
+    pub alive_agents: i32,
     resources_in_pool: i32,
     chosen_actions: HashMap<i32, i32>,
 }
@@ -41,7 +40,8 @@ impl Statistics for EpochStatistics {
 pub struct GenerationStatistics {
     generation_number: i32,
     terminated_at_epoch: i32,
-    reached_equilibrium: bool,
+    pub reached_equilibrium: bool,
+    pub agents_alive: i32,
 }
 
 impl GenerationStatistics {
@@ -49,11 +49,13 @@ impl GenerationStatistics {
         generation_number: i32,
         terminated_at_epoch: i32,
         reached_equilibrium: bool,
+        agents_alive: i32,
     ) -> GenerationStatistics {
         GenerationStatistics {
             generation_number,
             terminated_at_epoch,
             reached_equilibrium,
+            agents_alive,
         }
     }
 }
@@ -73,4 +75,4 @@ impl Statistics for GenerationStatistics {
     }
 }
 
-pub struct ExperimentStatistics {}
+//pub struct ExperimentStatistics {}

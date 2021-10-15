@@ -1,11 +1,9 @@
 // Crates
 extern crate confy;
 extern crate float_ord;
-//#[macro_use]
 extern crate getset;
 #[macro_use]
 extern crate serde;
-//#[macro_use]
 extern crate structopt;
 
 // Modules
@@ -36,16 +34,7 @@ fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
 }
 
 fn main() {
-    //let cfg: TragedyConfig = confy::load("tragedy-of-the-commons").unwrap();
-    // let cfg = TragedyConfig { 
-    //             n_generations: 100000, 
-    //             epochs_per_gen: 2000, 
-    //             n_agents: 1, 
-    //             n_actions: 9, 
-    //             init_pool_size: 5, 
-    //             max_pool_size: 9, 
-    //             regrowth_rate: 1.5 };
-                
+
     let args = CommandLineArgs::from_args();
     let cfg: ExperimentConfig = match args.config_path {
         Some(path) => confy::load_path(path).unwrap(),
@@ -61,6 +50,7 @@ fn main() {
             regrow,
             cfg.regrowth_rate,
         ),
+        cfg,
     );
     experiment.run();
 }

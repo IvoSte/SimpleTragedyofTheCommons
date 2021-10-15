@@ -17,18 +17,38 @@ pub struct ExperimentConfig {
     pub init_pool_size: i32,
     pub max_pool_size: i32,
     pub regrowth_rate: f32,
+    pub consumption: i32,
 }
 
 impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
-            n_generations: 1000,
-            epochs_per_gen: 200,
-            n_agents: 100,
+            n_generations: 10000,
+            epochs_per_gen: 100,
+            n_agents: 10,
             n_actions: 5,
-            init_pool_size: 12,
-            max_pool_size: 12,
+            init_pool_size: 120,
+            max_pool_size: 120,
             regrowth_rate: 1.2,
+            consumption: 1,
+        }
+    }
+}
+
+pub struct RLParameters {
+    pub epsilon: f32,
+    pub alpha: f32,
+    pub gamma: f32,
+    pub death_punish: i32,
+}
+
+impl Default for RLParameters {
+    fn default() -> Self {
+        Self {
+            epsilon: 0.01,
+            alpha: 0.2,
+            gamma: 0.9,
+            death_punish: 100000,
         }
     }
 }

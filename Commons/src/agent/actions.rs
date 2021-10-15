@@ -15,18 +15,18 @@ pub struct Action {
 impl Action {
     pub fn new(num_resources: i32, expected_value: f32, times_chosen: i32) -> Action {
         Action {
-            num_resources: num_resources,
-            expected_value: expected_value,
-            times_chosen: times_chosen,
+            num_resources,
+            expected_value,
+            times_chosen,
         }
     }
 
     // Instead of updating an action, create a new one.
     pub fn new_from_with_ev(action: &Action, expected_value: f32) -> Action {
-        Action { 
-            num_resources: action.num_resources, 
-            expected_value: expected_value, 
-            times_chosen: action.times_chosen
+        Action {
+            num_resources: action.num_resources,
+            expected_value: expected_value,
+            times_chosen: action.times_chosen,
         }
     }
 
@@ -47,7 +47,10 @@ impl Action {
     }
 
     pub fn report(&self) {
-        println!("NR: {} EV: {} NC: {}", self.num_resources, self.expected_value, self.times_chosen);
+        println!(
+            "NR: {} EV: {} NC: {}",
+            self.num_resources, self.expected_value, self.times_chosen
+        );
     }
 }
 
@@ -73,7 +76,8 @@ impl Actions {
         return actions;
     }
 
-    pub fn max_ev_action(&mut self) -> &mut Action { //TODO needs tiebreaker contingency, for initial selection
+    pub fn max_ev_action(&mut self) -> &mut Action {
+        //TODO needs tiebreaker contingency, for initial selection
         return self
             .actions
             .iter_mut()
@@ -83,11 +87,6 @@ impl Actions {
 
     pub fn random_action(&mut self) -> &mut Action {
         return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
-    }
-
-    pub fn replace(&mut self, index: usize, action: Action) {
-        self.actions.remove(index);
-        self.actions.insert(index, action);
     }
 
     pub fn report(&self) {

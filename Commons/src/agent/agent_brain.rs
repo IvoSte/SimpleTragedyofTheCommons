@@ -1,18 +1,18 @@
 //use std::num;
-
 use crate::agent::actions::{Action, Actions};
 use crate::agent::rl_algs::{bandit, qlearning, update_bandit, update_qlearning};
 use crate::agent::structs::{AgentState, AgentType, QTable};
+use crate::config::RLParameters;
 
 /// Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
 pub struct AgentBrain {
     actions: Actions,
     q_table: QTable, // possibly should be hidden somewhere, merged with actions so its only visible if its a qlearning agent
-    last_action_idx: Option<usize>,
     last_reward: i32,
     current_state: Option<AgentState>,
     previous_state: Option<AgentState>,
     behaviour_type: AgentType,
+    rlparameters: RLParameters,
 }
 
 impl AgentBrain {
@@ -20,11 +20,11 @@ impl AgentBrain {
         AgentBrain {
             actions: Actions::new(num_actions),
             q_table: QTable::new(num_actions),
-            last_action_idx: None,
             last_reward: 0,
             current_state: None,
             previous_state: None,
             behaviour_type: agent_type,
+            rlparameters: Default::default(),
         }
     }
 
@@ -33,18 +33,17 @@ impl AgentBrain {
         let chosen_action = self.decision_behaviour_interface();
         // Increment amount this action has been chosen
         chosen_action.increment_chosen(1);
-        // remember which one we chose this round
-        // self.last_action_idx = Some(index as usize);
         // Return the chosen integer of resources
         return chosen_action.get_num_resources();
     }
 
     fn decision_behaviour_interface(&mut self) -> &mut Action {
         match self.behaviour_type {
-            AgentType::BANDIT => bandit(&mut self.actions),
+            AgentType::BANDIT => bandit(&mut self.actions, self.rlparameters.epsilon),
             AgentType::QLEARNING => qlearning(
                 &mut self.q_table,
                 self.current_state.unwrap().to_string().clone(),
+                self.rlparameters.epsilon,
             ),
         }
     }
@@ -62,8 +61,8 @@ impl AgentBrain {
                 &self.current_state.unwrap(),
                 action_idx,
                 self.last_reward,
-                0.2,
-                0.9,
+                self.rlparameters.alpha,
+                self.rlparameters.gamma,
             ),
         }
     }
@@ -74,6 +73,10 @@ impl AgentBrain {
 
     pub fn decrease_last_reward(&mut self, subtract: i32) {
         self.last_reward -= subtract;
+    }
+
+    pub fn death_punishment(&mut self) {
+        self.decrease_last_reward(self.rlparameters.death_punish);
     }
 
     pub fn report(&self) {

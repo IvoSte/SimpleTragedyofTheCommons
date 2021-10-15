@@ -1,8 +1,9 @@
-use crate::agent::actions::{self, Action, Actions};
+use crate::agent::actions::{Actions};
 use core::panic;
 use std::{collections::HashMap, fmt};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use crate::config::ExperimentConfig;
 
 pub enum AgentType {
     BANDIT,
@@ -38,29 +39,35 @@ impl AgentState {
     }
     // Maybe wierd way to initialize?
     pub fn from_values(commons_value: i32, score_value: i32) -> AgentState {
+        let config: ExperimentConfig = Default::default();
+
         let mut agentstate = AgentState {
             commons_state: ResourceState::MEDIUM,
             score_state: ResourceState::MEDIUM,
         };
-        agentstate.map_commons(commons_value);
-        agentstate.map_score(score_value);
+        agentstate.map_commons(commons_value, config.max_pool_size);
+        agentstate.map_score(score_value, config.consumption);
         return agentstate;
     }
     // this is a mess, refactor TODO. should be some global config map dynamically determined using key values/bounds
-    pub fn map_commons(&mut self, commons_value: i32) {
-        if commons_value < 3 {
+    pub fn map_commons(&mut self, commons_value: i32, max_commons_value: i32) {
+        // resource state of the commons as seen by the agent. Below 30% is low (maybe this needs to be upped)
+        // below 70% is medium
+        // above 70% is high
+        if (commons_value as f32) < (0.3 * max_commons_value as f32) {
             self.commons_state = ResourceState::LOW;
-        } else if commons_value < 8 {
+        } else if (commons_value as f32) < (0.7 * max_commons_value as f32) {
             self.commons_state = ResourceState::MEDIUM;
         } else {
             self.commons_state = ResourceState::HIGH;
         }
     }
 
-    pub fn map_score(&mut self, score_value: i32) {
-        if score_value < 2 {
+    pub fn map_score(&mut self, score_value: i32, consume_value: i32) {
+        // resource state of the agents score. Have food for x days, you're low, medium or high on resources.
+        if score_value <= 2 * consume_value {
             self.score_state = ResourceState::LOW;
-        } else if score_value < 7 {
+        } else if score_value <= 6 * consume_value {
             self.score_state = ResourceState::MEDIUM;
         } else {
             self.score_state = ResourceState::HIGH;
