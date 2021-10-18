@@ -1,11 +1,3 @@
-// Crates
-extern crate confy;
-extern crate float_ord;
-extern crate getset;
-#[macro_use]
-extern crate serde;
-extern crate structopt;
-
 // Modules
 mod agent;
 mod commons;
@@ -34,7 +26,6 @@ fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
 }
 
 fn main() {
-
     let args = CommandLineArgs::from_args();
     let cfg: ExperimentConfig = match args.config_path {
         Some(path) => confy::load_path(path).unwrap(),
@@ -52,5 +43,18 @@ fn main() {
         ),
         cfg,
     );
-    experiment.run();
+
+    let experiment_stats = experiment.run();
+
+    // If a csv output path is given, attempt to write the experiment results to it
+    // TODO: validate this path is usable before running the whole experiment
+    if let Some(out_path) = args.out_path {
+        match experiment_stats.to_csv(&out_path) {
+            Ok(_) => println!(
+                "Experiment statistics succesfully written to {}",
+                out_path.display()
+            ),
+            Err(e) => println!("Failed to write statistics: \n {}", e),
+        };
+    }
 }
