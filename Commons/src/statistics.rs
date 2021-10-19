@@ -1,0 +1,78 @@
+use std::collections::HashMap;
+
+
+pub trait Statistics {
+    fn report(&self);
+}
+
+pub struct EpochStatistics {
+    epoch_number: i32,
+    pub alive_agents: i32,
+    resources_in_pool: i32,
+    chosen_actions: HashMap<i32, i32>,
+}
+
+impl EpochStatistics {
+    pub fn new(
+        epoch_number: i32,
+        alive_agents: i32,
+        resources_in_pool: i32,
+        chosen_actions: HashMap<i32, i32>,
+    ) -> EpochStatistics {
+        EpochStatistics {
+            epoch_number,
+            alive_agents,
+            resources_in_pool,
+            chosen_actions,
+        }
+    }
+}
+
+impl Statistics for EpochStatistics {
+    fn report(&self) {
+        println!(
+            "Epoch #{:<4} | agents alive: {:>3} | pool size: {:>5}",
+            self.epoch_number, self.alive_agents, self.resources_in_pool
+        )
+    }
+}
+
+pub struct GenerationStatistics {
+    generation_number: i32,
+    terminated_at_epoch: i32,
+    pub reached_equilibrium: bool,
+    pub agents_alive: i32,
+}
+
+impl GenerationStatistics {
+    pub fn new(
+        generation_number: i32,
+        terminated_at_epoch: i32,
+        reached_equilibrium: bool,
+        agents_alive: i32,
+    ) -> GenerationStatistics {
+        GenerationStatistics {
+            generation_number,
+            terminated_at_epoch,
+            reached_equilibrium,
+            agents_alive,
+        }
+    }
+}
+
+impl Statistics for GenerationStatistics {
+    fn report(&self) {
+        println!(
+            "Generation #{:<3} | terminated at epoch #{:<4} | reached equilibrium: {}",
+            self.generation_number,
+            self.terminated_at_epoch,
+            if self.reached_equilibrium {
+                "yes"
+            } else {
+                "no"
+            }
+        )
+    }
+}
+
+//pub struct ExperimentStatistics {}

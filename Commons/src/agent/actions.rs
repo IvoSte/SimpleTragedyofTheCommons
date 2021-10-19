@@ -1,5 +1,5 @@
+use float_ord::FloatOrd;
 use rand::seq::SliceRandom;
-use rand::Rng;
 use std::ops::{Index, IndexMut};
 
 /// An action / action availible to an agent, tracking its own statistics
@@ -15,9 +15,18 @@ pub struct Action {
 impl Action {
     pub fn new(num_resources: i32, expected_value: f32, times_chosen: i32) -> Action {
         Action {
-            num_resources: num_resources,
+            num_resources,
+            expected_value,
+            times_chosen,
+        }
+    }
+
+    // Instead of updating an action, create a new one.
+    pub fn new_from_with_ev(action: &Action, expected_value: f32) -> Action {
+        Action {
+            num_resources: action.num_resources,
             expected_value: expected_value,
-            times_chosen: times_chosen,
+            times_chosen: action.times_chosen,
         }
     }
 
@@ -36,6 +45,13 @@ impl Action {
     pub fn set_expected_value(&mut self, value: f32) {
         self.expected_value = value;
     }
+
+    pub fn report(&self) {
+        println!(
+            "NR: {} EV: {} NC: {}",
+            self.num_resources, self.expected_value, self.times_chosen
+        );
+    }
 }
 
 pub struct Actions {
@@ -45,9 +61,9 @@ pub struct Actions {
 
 /// Container for all availible actions. All 'non-cognitive' operations on action selection can be done here
 impl Actions {
-    pub fn new(num_actions: Option<i32>) -> Actions {
+    pub fn new(num_actions: i32) -> Actions {
         Actions {
-            actions: Self::init_actions(num_actions.unwrap_or(6)),
+            actions: Self::init_actions(num_actions),
         }
     }
 
@@ -60,18 +76,35 @@ impl Actions {
         return actions;
     }
 
-    pub fn max_ev_action(&self) -> &Action {
-        return self.actions.iter().max_by_key(|action| action.expected_value).unwrap();
+    pub fn max_ev_action(&mut self) -> &mut Action {
+        //TODO needs tiebreaker contingency, for initial selection
+        return self
+            .actions
+            .iter_mut()
+            .max_by_key(|action| FloatOrd(action.expected_value))
+            .unwrap();
     }
 
-    pub fn random_action(&self) -> &Action {
-        return self.actions.choose(&mut rand::thread_rng()).unwrap();
+    pub fn random_action(&mut self) -> &mut Action {
+        return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
+    }
+
+    pub fn report(&self) {
+        for action in &self.actions {
+            action.report();
+        }
     }
 }
 
 impl Index<usize> for Actions {
     type Output = Action;
-    fn index<'a>(&'a self, i: usize) -> &'a Action {
+    fn index(&self, i: usize) -> &Action {
         &self.actions[i]
+    }
+}
+
+impl IndexMut<usize> for Actions {
+    fn index_mut(&mut self, i: usize) -> &mut Action {
+        &mut self.actions[i]
     }
 }
