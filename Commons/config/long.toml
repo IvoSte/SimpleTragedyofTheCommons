@@ -1,5 +1,5 @@
 n_generations = 100000
-epochs_per_gen = 100
+epochs_per_gen = 1000
 n_agents = 10
 n_actions = 5
 init_pool_size = 120

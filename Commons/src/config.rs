@@ -1,11 +1,21 @@
 use structopt::StructOpt;
 
+use serde::{Deserialize, Serialize};
+
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
+#[structopt(
+    name = "Tragedy of the Commons",
+    about = "A simulation of the Tragedy of the Commons using Q-learning."
+)]
 pub struct CommandLineArgs {
-    /// The path to the experiment configuration file
-    #[structopt(parse(from_os_str))]
+    /// Path to the experiment configuration file
+    #[structopt(short, long = "config_path", parse(from_os_str))]
     pub config_path: Option<std::path::PathBuf>,
+
+    /// Path to output csv file
+    #[structopt(short, long = "out_path", parse(from_os_str))]
+    pub out_path: Option<std::path::PathBuf>,
 }
 
 #[derive(Serialize, Deserialize)]
