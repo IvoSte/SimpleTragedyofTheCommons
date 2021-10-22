@@ -1,10 +1,10 @@
 use float_ord::FloatOrd;
-use rand::seq::SliceRandom;
 use rand::prelude::*;
+use rand::seq::SliceRandom;
 use std::ops::{Index, IndexMut};
 
 /// An action / action availible to an agent, tracking its own statistics
-/// 
+///
 #[derive(Clone, Copy)]
 pub struct Action {
     /// Number of resources to take

@@ -1,10 +1,10 @@
-use crate::agent::actions::{Actions};
+use crate::agent::actions::Actions;
+use crate::config::{ExperimentConfig, StateThresholds};
 use core::panic;
-use std::{collections::HashMap, fmt};
 use rayon::ThreadPoolBuildError;
+use std::{collections::HashMap, fmt};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use crate::config::{ExperimentConfig, StateThresholds};
 
 use super::Agent;
 
@@ -82,7 +82,7 @@ impl AgentState {
     }
 
     pub fn statekeys() -> Vec<String> {
-        let mut vec: Vec<String> = Vec::new(); 
+        let mut vec: Vec<String> = Vec::new();
         // loop over all state permutations
         for state_1 in ResourceState::iter() {
             for state_2 in ResourceState::iter() {
@@ -133,14 +133,15 @@ impl QTable {
 
     pub fn average_qtable(agents: &Vec<Agent>) -> QTable {
         let config: ExperimentConfig = Default::default();
-        
+
         let mut avg_qtable = QTable::new(config.n_actions);
         for agent in agents {
             for state in AgentState::statekeys() {
                 for action_idx in 0..config.n_actions as usize {
                     let old_value = avg_qtable.get(state.clone())[action_idx].get_expected_value();
-                    let new_value = old_value + agent.brain.q_table.get(state.clone())[action_idx].get_expected_value();
-                    avg_qtable.get_mut(state.clone())[action_idx].set_expected_value(new_value);            
+                    let new_value = old_value
+                        + agent.brain.q_table.get(state.clone())[action_idx].get_expected_value();
+                    avg_qtable.get_mut(state.clone())[action_idx].set_expected_value(new_value);
                 }
             }
         }
@@ -155,6 +156,4 @@ impl QTable {
 
         return avg_qtable;
     }
-
 }
-

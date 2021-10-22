@@ -3,7 +3,6 @@ use rand::thread_rng;
 use std::collections::HashMap;
 
 use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
-use rayon::prelude::*;
 
 use crate::agent::structs::QTable;
 use crate::statistics::RLStatistics;
@@ -62,18 +61,18 @@ impl Experiment {
             //result.report();
             generations_stats.push(gen_stats);
         }
-        println!(
-            "Reached equilibrium {}/{} : {}%",
-            reached_equilibrium,
-            self.n_generations,
-            (reached_equilibrium as f32 / self.n_generations as f32 * 100.0)
-        );
-        println!(
-            "average agents alive at equilibrium: {}",
-            avg_agents_alive as f32 / reached_equilibrium as f32
-        );
-        self.agents[0].print_score();
-        self.agents[0].report_action_evs();
+        // println!(
+        //     "Reached equilibrium {}/{} : {}%",
+        //     reached_equilibrium,
+        //     self.n_generations,
+        //     (reached_equilibrium as f32 / self.n_generations as f32 * 100.0)
+        // );
+        // println!(
+        //     "average agents alive at equilibrium: {}",
+        //     avg_agents_alive as f32 / reached_equilibrium as f32
+        // );
+        // self.agents[0].print_score();
+        // self.agents[0].report_action_evs();
         let rl_stats = RLStatistics::new(QTable::average_qtable(&self.agents));
         ExperimentStatistics::new(generations_stats, rl_stats)
     }
@@ -142,7 +141,7 @@ impl Experiment {
         }
 
         // Commons grow after agents take, and before they asses the new state.
-        // In this way, they see the indirect effect of their behaviour -- they learn what 
+        // In this way, they see the indirect effect of their behaviour -- they learn what
         // the new state will be, not what it is directly after.
         self.commons.grow();
 

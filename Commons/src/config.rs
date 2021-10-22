@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(StructOpt)]
 #[structopt(
     name = "Tragedy of the Commons",
-    about = "A simulation of the Tragedy of the Commons using Q-learning."
+    about = "A simulation of the Tragedy of the Commons using Q-learning agents."
 )]
 pub struct CommandLineArgs {
     /// Path to the experiment configuration file
@@ -16,9 +16,23 @@ pub struct CommandLineArgs {
     /// Path to output csv file
     #[structopt(short, long = "out_path", parse(from_os_str))]
     pub out_path: Option<std::path::PathBuf>,
+
+    #[structopt(short, long)]
+    pub n_experiments: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct SimulationConfig {
+    pub n_experiments: i32,
+}
+
+impl Default for SimulationConfig {
+    fn default() -> Self {
+        Self { n_experiments: 1 }
+    }
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct ExperimentConfig {
     pub n_generations: i32,
     pub epochs_per_gen: i32,
@@ -45,7 +59,6 @@ impl Default for ExperimentConfig {
     }
 }
 
-
 pub struct StateThresholds {
     pub commons_low: f32,
     pub commons_med: f32,
@@ -59,9 +72,9 @@ impl Default for StateThresholds {
             commons_low: 0.3, // percentage of max commons
             commons_med: 0.7,
             score_low: 2, // times consume
-            score_med: 6,        
+            score_med: 6,
         }
-    }    
+    }
 }
 pub struct RLParameters {
     pub epsilon: f32,
