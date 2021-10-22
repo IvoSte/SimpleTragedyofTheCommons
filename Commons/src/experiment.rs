@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
 use rayon::prelude::*;
 
+use crate::agent::structs::QTable;
+
 // Aliases
 use super::agent::Agent;
 use super::commons::Commons;
@@ -71,7 +73,8 @@ impl Experiment {
         );
         self.agents[0].print_score();
         self.agents[0].report_action_evs();
-
+        let avg_qtable = QTable::average_qtable(&self.agents);
+        avg_qtable.report();
         ExperimentStatistics::new(generations_stats)
     }
 
@@ -138,6 +141,11 @@ impl Experiment {
             }
         }
 
+        // Commons grow after agents take, and before they asses the new state.
+        // In this way, they see the indirect effect of their behaviour -- they learn what 
+        // the new state will be, not what it is directly after.
+        self.commons.grow();
+
         let consumption = self.config.consumption;
         let pool = self.commons.resource_pool;
         self.agents.iter_mut().for_each(|agent| {
@@ -148,9 +156,6 @@ impl Experiment {
             agent.update_state(pool);
             agent.learn();
         });
-
-        // TODO: Should the commons grow at th end of the epoch, or at the start?
-        self.commons.grow();
 
         EpochStatistics::new(
             epoch_number,

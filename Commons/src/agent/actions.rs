@@ -1,8 +1,11 @@
 use float_ord::FloatOrd;
 use rand::seq::SliceRandom;
+use rand::prelude::*;
 use std::ops::{Index, IndexMut};
 
 /// An action / action availible to an agent, tracking its own statistics
+/// 
+#[derive(Clone, Copy)]
 pub struct Action {
     /// Number of resources to take
     num_resources: i32,
@@ -70,8 +73,8 @@ impl Actions {
     fn init_actions(num_actions: i32) -> Vec<Action> {
         let mut actions: Vec<Action> = Vec::with_capacity(num_actions as usize);
         for i in 0..num_actions {
-            // TODO: initialization strategy can be applied here
-            actions.push(Action::new(i, 0., 0));
+            // TODO: initialization strategy can be applied here -- current strategy is random float [0,1]
+            actions.push(Action::new(i, rand::thread_rng().gen(), 0));
         }
         return actions;
     }

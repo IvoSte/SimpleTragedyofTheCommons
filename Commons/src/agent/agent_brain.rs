@@ -7,7 +7,7 @@ use crate::config::RLParameters;
 /// Cognitive component of the agent. All 'cognitive' operations / decision making of actions can be done here
 pub struct AgentBrain {
     actions: Actions,
-    q_table: QTable, // possibly should be hidden somewhere, merged with actions so its only visible if its a qlearning agent
+    pub q_table: QTable, // possibly should be hidden somewhere, merged with actions so its only visible if its a qlearning agent
     last_reward: i32,
     current_state: Option<AgentState>,
     previous_state: Option<AgentState>,

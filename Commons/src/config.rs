@@ -33,7 +33,7 @@ pub struct ExperimentConfig {
 impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
-            n_generations: 10000,
+            n_generations: 1000,
             epochs_per_gen: 100,
             n_agents: 10,
             n_actions: 5,
@@ -45,6 +45,24 @@ impl Default for ExperimentConfig {
     }
 }
 
+
+pub struct StateThresholds {
+    pub commons_low: f32,
+    pub commons_med: f32,
+    pub score_low: i32,
+    pub score_med: i32,
+}
+
+impl Default for StateThresholds {
+    fn default() -> Self {
+        Self {
+            commons_low: 0.3, // percentage of max commons
+            commons_med: 0.7,
+            score_low: 2, // times consume
+            score_med: 6,        
+        }
+    }    
+}
 pub struct RLParameters {
     pub epsilon: f32,
     pub alpha: f32,
