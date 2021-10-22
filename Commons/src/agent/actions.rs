@@ -88,6 +88,10 @@ impl Actions {
             .unwrap();
     }
 
+    // this doesn't need to be mutable. We can get this action as non-mutable TODO
+    // and then in the higher layer get the action index
+    // and use that index to get a mutable version of that action to the higher layer
+    // by having a get_mut_action(&self mut, action_idx) -> &mut action function here low level.
     pub fn random_action(&mut self) -> &mut Action {
         return self.actions.choose_mut(&mut rand::thread_rng()).unwrap();
     }

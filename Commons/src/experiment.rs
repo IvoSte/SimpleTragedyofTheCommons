@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
 
 use crate::agent::structs::QTable;
+use crate::statistics::RLStatistics;
 
 // Aliases
 use super::agent::Agent;
@@ -64,10 +65,8 @@ impl Experiment {
         // );
         // self.agents[0].print_score();
         // self.agents[0].report_action_evs();
-        // let avg_qtable = QTable::average_qtable(&self.agents);
-        // avg_qtable.report();
-
-        ExperimentStatistics::new(generations_stats)
+        let rl_stats = RLStatistics::new(QTable::average_qtable(&self.agents));
+        ExperimentStatistics::new(generations_stats, rl_stats)
     }
 
     /// Run one generation, executing epochs until the commons
