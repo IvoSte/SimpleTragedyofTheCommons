@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use csv::Writer;
+use rayon::prelude::*;
 use serde::Serialize;
 
 pub trait Statistics {
@@ -121,5 +122,62 @@ impl Statistics for ExperimentStatistics {
             "Experiment completed | generations ran: {}",
             self.generations_stats.len()
         )
+    }
+}
+
+#[derive(Serialize)]
+pub struct AverageGenerationStatistics {
+    generation_number: i32,
+    avg_epochs_ran: f32,
+    avg_agents_alive: f32,
+}
+
+pub struct AverageExperimentStatistics {
+    avg_gen_stats: Vec<AverageGenerationStatistics>,
+}
+
+impl AverageExperimentStatistics {
+    pub fn from_vector(
+        experiments_stats: Vec<ExperimentStatistics>,
+    ) -> AverageExperimentStatistics {
+        let n_gens = experiments_stats[0].generations_stats.len();
+        let n_experiments = experiments_stats.len();
+        if experiments_stats
+            .iter()
+            .any(|stats| stats.generations_stats.len() != n_gens)
+        {
+            panic!("Not all experiments ran for the same number of generations.");
+        }
+
+        let avg_gen_stats: Vec<AverageGenerationStatistics> = (0..n_gens)
+            .into_par_iter()
+            .map(|gen_idx| {
+                let mut sum_epochs_ran: f32 = 0.;
+                let mut sum_agents_alive: f32 = 0.;
+                for stats in &experiments_stats {
+                    let gen_stats = &stats.generations_stats[gen_idx];
+                    sum_epochs_ran += gen_stats.epochs_stats.len() as f32;
+                    sum_agents_alive += gen_stats.agents_alive as f32;
+                }
+
+                AverageGenerationStatistics {
+                    generation_number: gen_idx as i32,
+                    avg_epochs_ran: sum_epochs_ran / n_experiments as f32,
+                    avg_agents_alive: sum_agents_alive / n_experiments as f32,
+                }
+            })
+            .collect();
+
+        AverageExperimentStatistics { avg_gen_stats }
+    }
+
+    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(out_path)?;
+        for gen in &self.avg_gen_stats {
+            out_writer.serialize(gen)?;
+        }
+
+        out_writer.flush()?;
+        Ok(())
     }
 }

@@ -3,7 +3,6 @@ use rand::thread_rng;
 use std::collections::HashMap;
 
 use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
-use rayon::prelude::*;
 
 // Aliases
 use super::agent::Agent;
@@ -59,18 +58,18 @@ impl Experiment {
             //result.report();
             generations_stats.push(gen_stats);
         }
-        println!(
-            "Reached equilibrium {}/{} : {}%",
-            reached_equilibrium,
-            self.n_generations,
-            (reached_equilibrium as f32 / self.n_generations as f32 * 100.0)
-        );
-        println!(
-            "average agents alive at equilibrium: {}",
-            avg_agents_alive as f32 / reached_equilibrium as f32
-        );
-        self.agents[0].print_score();
-        self.agents[0].report_action_evs();
+        // println!(
+        //     "Reached equilibrium {}/{} : {}%",
+        //     reached_equilibrium,
+        //     self.n_generations,
+        //     (reached_equilibrium as f32 / self.n_generations as f32 * 100.0)
+        // );
+        // println!(
+        //     "average agents alive at equilibrium: {}",
+        //     avg_agents_alive as f32 / reached_equilibrium as f32
+        // );
+        // self.agents[0].print_score();
+        // self.agents[0].report_action_evs();
 
         ExperimentStatistics::new(generations_stats)
     }
