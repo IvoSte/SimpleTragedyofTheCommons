@@ -38,19 +38,11 @@ impl Experiment {
     }
 
     /// Run the experiment with `self.generations` generations.
-    pub fn run(&mut self) -> ExperimentStatistics {
-        println!("Running experiment with {} generations", self.n_generations);
-
+    pub fn run(&mut self, pb: ProgressBar) -> ExperimentStatistics {
         let mut reached_equilibrium = 0;
         let mut avg_agents_alive = 0;
         let mut generations_stats: Vec<GenerationStatistics> =
             Vec::with_capacity(self.n_generations as usize);
-
-        let pb = ProgressBar::new(self.n_generations as u64);
-        pb.set_style(
-            ProgressStyle::default_bar()
-                .template("[{elapsed_precise}] {bar:40.green} {pos:>7}/{len:7} {msg}"),
-        );
         for n in (0..self.n_generations).progress_with(pb) {
             let gen_stats = self.single_generation(n);
             if gen_stats.reached_equilibrium {

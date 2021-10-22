@@ -10,8 +10,10 @@ use agent::Agent;
 use commons::Commons;
 use config::{CommandLineArgs, ExperimentConfig, SimulationConfig};
 use experiment::Experiment;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use statistics::{AverageExperimentStatistics, ExperimentStatistics};
+use std::sync::mpsc::channel;
 use structopt::StructOpt;
 
 fn make_agents(n_agents: i32, n_actions: i32) -> Vec<Agent> {
@@ -25,6 +27,38 @@ fn make_agents(n_agents: i32, n_actions: i32) -> Vec<Agent> {
 
 fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
     (current_amount as f32 * regrowth_rate) as i32
+}
+
+fn run_experiments(n_experiments: i32, cfg: ExperimentConfig) -> Vec<ExperimentStatistics> {
+    let multi_progress = MultiProgress::new();
+    let (sender, receiver) = channel();
+    (0..n_experiments).for_each(|_| {
+        let pb = multi_progress.add(ProgressBar::new(cfg.n_generations as u64));
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template("[{elapsed_precise}] {bar:40.green} {pos:>7}/{len:7} {msg}"),
+        );
+        let new_sender = sender.clone();
+        rayon::spawn(move || {
+            let mut experiment = Experiment::new(
+                cfg.n_generations,
+                cfg.epochs_per_gen,
+                make_agents(cfg.n_agents, cfg.n_actions),
+                Commons::new(
+                    cfg.init_pool_size as i32,
+                    cfg.max_pool_size as i32,
+                    regrow,
+                    cfg.regrowth_rate,
+                ),
+                cfg,
+            );
+            new_sender.send(experiment.run(pb)).unwrap();
+        });
+    });
+
+    drop(sender);
+    multi_progress.join().expect("Progress bars failed");
+    receiver.iter().collect()
 }
 
 fn main() {
@@ -42,27 +76,15 @@ fn main() {
         sim_config.n_experiments
     };
 
-    let experiment_results: Vec<ExperimentStatistics> = (0..n_experiments)
-        .into_par_iter()
-        .map(|_| {
-            let mut experiment = Experiment::new(
-                cfg.n_generations,
-                cfg.epochs_per_gen,
-                make_agents(cfg.n_agents, cfg.n_actions),
-                Commons::new(
-                    cfg.init_pool_size as i32,
-                    cfg.max_pool_size as i32,
-                    regrow,
-                    cfg.regrowth_rate,
-                ),
-                cfg,
-            );
+    println!(
+        "Running {} experiment{} with {} generations",
+        n_experiments,
+        if n_experiments > 1 { "s" } else { "" },
+        cfg.n_generations
+    );
 
-            experiment.run()
-        })
-        .collect();
-
-    let avg_stats = AverageExperimentStatistics::from_vector(experiment_results);
+    let stats = run_experiments(n_experiments, cfg);
+    let avg_stats = AverageExperimentStatistics::from_vector(stats);
 
     // If a csv output path is given, attempt to write the experiment results to it
     // TODO: validate this path is usable before running the whole experiment
