@@ -22,12 +22,14 @@ impl Commons {
             regrowth_rate,
         }
     }
+
     pub fn grow(&mut self) {
         self.resource_pool = (self.regrowth_function)(self.resource_pool, self.regrowth_rate);
         if self.resource_pool > self.max_resources {
             self.resource_pool = self.max_resources;
         }
     }
+
     pub fn take_resources(&mut self, value: i32) -> i32 {
         let res = if self.resource_pool >= value {
             value
@@ -37,8 +39,8 @@ impl Commons {
         self.resource_pool -= res;
         return res;
     }
+
     pub fn reset(&mut self) {
         self.resource_pool = self.init_resources;
     }
-
 }

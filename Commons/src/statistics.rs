@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::path::PathBuf;
 
 use csv::Writer;
 use rayon::prelude::*;
@@ -105,23 +106,33 @@ pub struct ExperimentStatistics {
 }
 
 impl ExperimentStatistics {
-    pub fn new(generations_stats: Vec<GenerationStatistics>, rl_stats: RLStatistics) -> ExperimentStatistics {
-        ExperimentStatistics { generations_stats, rl_stats}
+    pub fn new(
+        generations_stats: Vec<GenerationStatistics>,
+        rl_stats: RLStatistics,
+    ) -> ExperimentStatistics {
+        ExperimentStatistics {
+            generations_stats,
+            rl_stats,
+        }
     }
 
-    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let mut path_1 = out_path.clone();
-        path_1.set_file_name("gen_stats.csv");
-        let mut path_2 = out_path.clone();
-        path_2.set_file_name("rl_stats.csv");
-        println!("{:?} {:?} {:?}",out_path, &path_1.display(), &path_2.display());
+    pub fn to_csvs(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut path_1 = output_dir.clone();
+        path_1.push("gen_stats.csv");
+        let mut path_2 = output_dir.clone();
+        path_2.push("rl_stats.csv");
+        println!(
+            "Writing generation stats to {}, reinforcement learning stats to {}",
+            path_1.display(),
+            path_2.display()
+        );
         self.gen_stats_to_csv(&path_1)?;
         self.rl_stats_to_csv(&path_2)?;
         Ok(())
     }
 
-    pub fn gen_stats_to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let mut out_writer = Writer::from_path(out_path)?;
+    pub fn gen_stats_to_csv(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(output_dir)?;
         for gen in &self.generations_stats {
             out_writer.serialize(gen.as_csv_record())?;
         }
@@ -130,10 +141,9 @@ impl ExperimentStatistics {
         Ok(())
     }
 
-    pub fn rl_stats_to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        self.rl_stats.to_csv(out_path)
+    pub fn rl_stats_to_csv(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        self.rl_stats.to_csv(output_dir)
     }
-
 }
 
 impl Statistics for ExperimentStatistics {
@@ -146,17 +156,17 @@ impl Statistics for ExperimentStatistics {
 }
 
 pub struct RLStatistics {
-    qtable : QTable,
+    qtable: QTable,
 }
 
 impl RLStatistics {
     pub fn new(qtable: QTable) -> RLStatistics {
-        RLStatistics{ qtable }
+        RLStatistics { qtable }
     }
 
     fn csv_head(&self) -> Vec<String> {
         let mut head: Vec<String> = Vec::new();
-        head.push("action_num".to_string()); 
+        head.push("action_num".to_string());
         for key in self.qtable.state_action_pairs.keys() {
             head.push(key.clone());
         }
@@ -172,15 +182,14 @@ impl RLStatistics {
         action_evs
     }
 
-    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+    pub fn to_csv(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
         let config: ExperimentConfig = Default::default();
 
-        let mut out_writer = Writer::from_path(out_path)?;
+        let mut out_writer = Writer::from_path(output_dir)?;
         out_writer.serialize(self.csv_head())?;
         for action_idx in 0..config.n_actions as usize {
             out_writer.serialize(self.as_csv_record(action_idx))?;
         }
-        
         out_writer.flush()?;
         Ok(())
     }
@@ -199,7 +208,7 @@ pub struct AverageExperimentStatistics {
 
 impl AverageExperimentStatistics {
     pub fn from_vector(
-        experiments_stats: Vec<ExperimentStatistics>,
+        experiments_stats: &Vec<ExperimentStatistics>,
     ) -> AverageExperimentStatistics {
         let n_gens = experiments_stats[0].generations_stats.len();
         let n_experiments = experiments_stats.len();
@@ -215,7 +224,7 @@ impl AverageExperimentStatistics {
             .map(|gen_idx| {
                 let mut sum_epochs_ran: f32 = 0.;
                 let mut sum_agents_alive: f32 = 0.;
-                for stats in &experiments_stats {
+                for stats in experiments_stats {
                     let gen_stats = &stats.generations_stats[gen_idx];
                     sum_epochs_ran += gen_stats.epochs_stats.len() as f32;
                     sum_agents_alive += gen_stats.agents_alive as f32;
@@ -232,8 +241,8 @@ impl AverageExperimentStatistics {
         AverageExperimentStatistics { avg_gen_stats }
     }
 
-    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let mut out_writer = Writer::from_path(out_path)?;
+    pub fn to_csv(&self, output_dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(output_dir)?;
         for gen in &self.avg_gen_stats {
             out_writer.serialize(gen)?;
         }

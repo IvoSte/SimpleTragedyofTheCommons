@@ -1,12 +1,13 @@
-use crate::agent::actions::Actions;
-use crate::config::{ExperimentConfig, StateThresholds};
 use core::panic;
-use rayon::ThreadPoolBuildError;
+
 use std::{collections::HashMap, fmt};
+
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use super::Agent;
+use crate::agent::actions::Actions;
+use crate::config::{ExperimentConfig, StateThresholds};
+use crate::Agent;
 
 pub enum AgentType {
     BANDIT,
@@ -25,6 +26,7 @@ impl fmt::Display for ResourceState {
         write!(f, "{:?}", self)
     }
 }
+
 #[derive(Clone, Copy)]
 pub struct AgentState {
     commons_state: ResourceState,

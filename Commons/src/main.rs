@@ -13,6 +13,7 @@ use experiment::Experiment;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use statistics::{AverageExperimentStatistics, ExperimentStatistics};
+use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use structopt::StructOpt;
 
@@ -32,7 +33,7 @@ fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
 fn run_experiments(n_experiments: i32, cfg: ExperimentConfig) -> Vec<ExperimentStatistics> {
     let multi_progress = MultiProgress::new();
     let (sender, receiver) = channel();
-    (0..n_experiments).for_each(|_| {
+    for _ in 0..n_experiments {
         let pb = multi_progress.add(ProgressBar::new(cfg.n_generations as u64));
         pb.set_style(
             ProgressStyle::default_bar()
@@ -54,11 +55,33 @@ fn run_experiments(n_experiments: i32, cfg: ExperimentConfig) -> Vec<ExperimentS
             );
             new_sender.send(experiment.run(pb)).unwrap();
         });
-    });
+    }
 
     drop(sender);
     multi_progress.join().expect("Progress bars failed");
     receiver.iter().collect()
+}
+
+fn write_stats(stats: Vec<ExperimentStatistics>, output_dir: PathBuf) {
+    // If a csv output path is given, attempt to write the experiment results to it
+    // TODO: validate this path is usable before running the whole experiment
+    match stats[0].to_csvs(&output_dir) {
+        Ok(_) => println!(
+            "Experiment statistics succesfully written to {}",
+            output_dir.display()
+        ),
+        Err(e) => println!("Failed to write experiment statistics: \n {}", e),
+    };
+
+    let mut avg_output_path = output_dir.clone();
+    avg_output_path.push("avg_gen_stats.csv");
+    match AverageExperimentStatistics::from_vector(&stats).to_csv(&avg_output_path) {
+        Ok(_) => println!(
+            "Average statistics succesfully written to {}",
+            avg_output_path.display()
+        ),
+        Err(e) => println!("Failed to write average statistics: \n {}", e),
+    };
 }
 
 fn main() {
@@ -84,17 +107,7 @@ fn main() {
     );
 
     let stats = run_experiments(n_experiments, cfg);
-    let avg_stats = AverageExperimentStatistics::from_vector(stats);
-
-    // If a csv output path is given, attempt to write the experiment results to it
-    // TODO: validate this path is usable before running the whole experiment
-    if let Some(out_path) = args.out_path {
-        match avg_stats.to_csv(&out_path) {
-            Ok(_) => println!(
-                "Experiment statistics succesfully written to {}",
-                out_path.display()
-            ),
-            Err(e) => println!("Failed to write statistics: \n {}", e),
-        };
+    if let Some(output_dir) = args.output_dir {
+        write_stats(stats, output_dir);
     }
 }
