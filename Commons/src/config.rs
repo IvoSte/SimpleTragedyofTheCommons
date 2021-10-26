@@ -58,6 +58,7 @@ impl Default for ExperimentConfig {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct StateThresholds {
     pub commons_low: f32,
     pub commons_med: f32,
@@ -76,6 +77,7 @@ impl Default for StateThresholds {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct RLParameters {
     pub epsilon: f32,
     pub alpha: f32,
@@ -87,7 +89,7 @@ impl Default for RLParameters {
     fn default() -> Self {
         Self {
             epsilon: 0.01,
-            alpha: 0.2,
+            alpha: 0.05,
             gamma: 0.9,
             death_punish: 100000,
         }

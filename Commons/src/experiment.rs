@@ -65,7 +65,7 @@ impl Experiment {
         // );
         // self.agents[0].print_score();
         // self.agents[0].report_action_evs();
-        let rl_stats = RLStatistics::new(QTable::average_qtable(&self.agents));
+        let rl_stats = RLStatistics::new(QTable::average_q_table(&self.agents));
         ExperimentStatistics::new(generations_stats, rl_stats)
     }
 

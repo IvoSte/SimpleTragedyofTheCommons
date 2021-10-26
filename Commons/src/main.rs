@@ -8,11 +8,11 @@ mod statistics;
 // Aliases
 use agent::Agent;
 use commons::Commons;
-use config::{CommandLineArgs, ExperimentConfig, SimulationConfig};
+use config::{CommandLineArgs, ExperimentConfig, RLParameters, SimulationConfig, StateThresholds};
 use experiment::Experiment;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use rayon::prelude::*;
-use statistics::{AverageExperimentStatistics, ExperimentStatistics};
+use statistics::{AverageExperimentStatistics, ExperimentOutput, ExperimentStatistics};
+use std::fs;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use structopt::StructOpt;
@@ -65,20 +65,32 @@ fn run_experiments(n_experiments: i32, cfg: ExperimentConfig) -> Vec<ExperimentS
 fn write_stats(stats: Vec<ExperimentStatistics>, output_dir: PathBuf) {
     // If a csv output path is given, attempt to write the experiment results to it
     // TODO: validate this path is usable before running the whole experiment
-    match stats[0].to_csvs(&output_dir) {
-        Ok(_) => println!(
-            "Experiment statistics succesfully written to {}",
-            output_dir.display()
-        ),
-        Err(e) => println!("Failed to write experiment statistics: \n {}", e),
-    };
+    let mut single_output_dir = output_dir.clone();
+    single_output_dir.push("experiments");
+    for (exp_idx, exp_stats) in stats.iter().enumerate() {
+        let mut exp_output_dir = single_output_dir.clone();
+        exp_output_dir.push(exp_idx.to_string());
+        fs::create_dir_all(&exp_output_dir).expect("Could not create experiment output dir");
+        match exp_stats.to_csvs(&exp_output_dir) {
+            Ok(_) => println!(
+                "Experiment #{} statistics succesfully written to {}",
+                exp_idx,
+                exp_output_dir.display()
+            ),
+            Err(e) => println!(
+                "Failed to write experiment #{} statistics: \n {}",
+                exp_idx, e
+            ),
+        };
+    }
 
-    let mut avg_output_path = output_dir.clone();
-    avg_output_path.push("avg_gen_stats.csv");
-    match AverageExperimentStatistics::from_vector(&stats).to_csv(&avg_output_path) {
+    let mut avg_output_dir = output_dir.clone();
+    avg_output_dir.push("avg_stats");
+    fs::create_dir_all(&avg_output_dir).expect("Could not create output dir");
+    match AverageExperimentStatistics::from_vector(&stats).to_csvs(&avg_output_dir) {
         Ok(_) => println!(
             "Average statistics succesfully written to {}",
-            avg_output_path.display()
+            avg_output_dir.display()
         ),
         Err(e) => println!("Failed to write average statistics: \n {}", e),
     };
@@ -105,9 +117,24 @@ fn main() {
         if n_experiments > 1 { "s" } else { "" },
         cfg.n_generations
     );
-
     let stats = run_experiments(n_experiments, cfg);
     if let Some(output_dir) = args.output_dir {
+        fs::create_dir_all(&output_dir).expect("Could not create output dir");
+        let mut exp_config_path = output_dir.clone();
+        exp_config_path.push("experiment.toml");
+        confy::store_path(exp_config_path, cfg).expect("Could not write experiment config");
+
+        let mut rl_params_path = output_dir.clone();
+        rl_params_path.push("rl_params.toml");
+        let rl_params: RLParameters = Default::default();
+        confy::store_path(rl_params_path, rl_params).expect("Could not write RL parameters");
+
+        let mut state_thresholds_path = output_dir.clone();
+        state_thresholds_path.push("state_thresholds.toml");
+        let state_thresholds: StateThresholds = Default::default();
+        confy::store_path(state_thresholds_path, state_thresholds)
+            .expect("Could not write state thresholds");
+
         write_stats(stats, output_dir);
     }
 }
