@@ -18,7 +18,7 @@ pub struct EpochStatistics {
     epoch_number: i32,
     pub alive_agents: i32,
     resources_in_pool: i32,
-    chosen_actions: HashMap<i32, i32>,
+    chosen_actions: Vec<i32>,
 }
 
 impl EpochStatistics {
@@ -26,7 +26,7 @@ impl EpochStatistics {
         epoch_number: i32,
         alive_agents: i32,
         resources_in_pool: i32,
-        chosen_actions: HashMap<i32, i32>,
+        chosen_actions: Vec<i32>,
     ) -> EpochStatistics {
         EpochStatistics {
             epoch_number,
@@ -52,6 +52,7 @@ struct GenerationCsvRecord {
     epochs_ran: i32,
     reached_equilibrium: bool,
     agents_alive: i32,
+    chosen_actions: Vec<i32>,
 }
 
 pub struct GenerationStatistics {
@@ -77,11 +78,19 @@ impl GenerationStatistics {
     }
 
     fn as_csv_record(&self) -> GenerationCsvRecord {
+        let n_actions = self.epochs_stats[0].chosen_actions.len();
+        let mut sum_chosen_actions = vec![0; self.epochs_stats[0].chosen_actions.len()];
+        for epoch_stats in &self.epochs_stats {
+            for idx in 0..n_actions {
+                sum_chosen_actions[idx] += epoch_stats.chosen_actions[idx];
+            }
+        }
         GenerationCsvRecord {
             gen_num: self.generation_number,
             epochs_ran: self.epochs_stats.len() as i32,
             reached_equilibrium: self.reached_equilibrium,
             agents_alive: self.agents_alive,
+            chosen_actions: sum_chosen_actions,
         }
     }
 
@@ -139,8 +148,10 @@ impl ExperimentStatistics {
 
     pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
         let mut path_1 = out_path.clone();
-        path_1.set_file_name("
-        gen_stats.csv");
+        path_1.set_file_name(
+            "
+        gen_stats.csv",
+        );
         let mut path_2 = out_path.clone();
         path_2.set_file_name("rl_stats.csv");
         println!(
@@ -179,7 +190,6 @@ impl Statistics for ExperimentStatistics {
         )
     }
 }
-
 
 #[derive(Serialize)]
 pub struct AverageGenerationStatistics {
@@ -304,50 +314,4 @@ impl RLStatistics {
     pub fn get_q_table(&self) -> &QTable {
         &self.q_table
     }
-
 }
-
-// pub struct RLStatistics {
-//     qtable: QTable,
-// }
-
-// impl RLStatistics {
-//     pub fn new(qtable: QTable) -> RLStatistics {
-//         RLStatistics { qtable }
-//     }
-
-//     fn csv_head(&self) -> Vec<String> {
-//         let mut head: Vec<String> = Vec::new();
-//         head.push("action_num".to_string());
-//         for key in self.qtable.state_action_pairs.keys() {
-//             head.push(key.clone());
-//         }
-//         head
-//     }
-
-//     fn as_csv_record(&self, action_num: usize) -> Vec<f32> {
-//         let mut action_evs: Vec<f32> = Vec::new();
-//         action_evs.push(action_num as f32);
-//         for (_key, value) in &self.qtable.state_action_pairs {
-//             action_evs.push(value[action_num].get_expected_value());
-//         }
-//         action_evs
-//     }
-
-//     pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-//         let config: ExperimentConfig = Default::default();
-
-//         let mut out_writer = Writer::from_path(out_path)?;
-//         out_writer.serialize(self.csv_head())?;
-//         for action_idx in 0..config.n_actions as usize {
-//             out_writer.serialize(self.as_csv_record(action_idx))?;
-//         }
-
-//         out_writer.flush()?;
-//         Ok(())
-//     }
-    
-//     pub fn get_q_table(&self) -> &QTable {
-//         &self.q_table
-//     }
-// }
