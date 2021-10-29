@@ -1,6 +1,8 @@
+use csv::Writer;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
+use std::fs::File;
 
 use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
 
@@ -67,6 +69,28 @@ impl Experiment {
         // self.agents[0].report_action_evs();
         let rl_stats = RLStatistics::new(QTable::average_q_table(&self.agents));
         ExperimentStatistics::new(generations_stats, rl_stats)
+    }
+
+    pub fn run_incremental_output(
+        &mut self,
+        pb: ProgressBar,
+        csv_writer: &mut Writer<File>,
+    ) -> RLStatistics {
+        let mut reached_equilibrium = 0;
+        let mut avg_agents_alive = 0;
+        for gen_idx in (0..self.n_generations).progress_with(pb) {
+            let gen_stats = self.single_generation(gen_idx);
+            if gen_stats.reached_equilibrium {
+                reached_equilibrium += 1;
+                avg_agents_alive += gen_stats.agents_alive;
+            }
+            match gen_stats.append_to_csv(csv_writer) {
+                Ok(_) => (),
+                Err(e) => println!("Failed to write generation #{} stats: \n {}", gen_idx, e),
+            };
+        }
+
+        RLStatistics::new(QTable::average_q_table(&self.agents))
     }
 
     /// Run one generation, executing epochs until the commons

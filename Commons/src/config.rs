@@ -8,16 +8,16 @@ use serde::{Deserialize, Serialize};
     about = "A simulation of the Tragedy of the Commons using Q-learning agents."
 )]
 pub struct CommandLineArgs {
+    /// Path to output csv file
+    #[structopt(parse(from_os_str))]
+    pub output_dir: std::path::PathBuf,
+
     /// Path to the experiment configuration file
     #[structopt(short, long = "config_path", parse(from_os_str))]
     pub config_path: Option<std::path::PathBuf>,
 
-    /// Path to output csv file
-    #[structopt(short, long = "output_dir", parse(from_os_str))]
-    pub output_dir: Option<std::path::PathBuf>,
-
-    #[structopt(short, long)]
-    pub n_experiments: Option<i32>,
+    #[structopt(short, long, default_value = "1")]
+    pub n_experiments: i32,
 }
 
 #[derive(Serialize, Deserialize)]

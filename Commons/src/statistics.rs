@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 
 use csv::Writer;
@@ -82,6 +83,10 @@ impl GenerationStatistics {
             reached_equilibrium: self.reached_equilibrium,
             agents_alive: self.agents_alive,
         }
+    }
+
+    pub fn append_to_csv(&self, writer: &mut Writer<File>) -> Result<(), csv::Error> {
+        writer.serialize(self.as_csv_record())
     }
 }
 
@@ -239,6 +244,17 @@ impl RLStatistics {
         RLStatistics { q_table }
     }
 
+    pub fn average_from_vector(rl_stat_objects: Vec<RLStatistics>) -> RLStatistics {
+        RLStatistics {
+            q_table: QTable::average_from_vector(
+                &rl_stat_objects
+                    .iter()
+                    .map(|rl_stats| rl_stats.get_q_table())
+                    .collect(),
+            ),
+        }
+    }
+
     fn csv_head(&self) -> Vec<String> {
         let mut head: Vec<String> = Vec::new();
         head.push("action_num".to_string());
@@ -257,12 +273,10 @@ impl RLStatistics {
         action_evs
     }
 
-    pub fn to_csv(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let config: ExperimentConfig = Default::default();
-
-        let mut out_writer = Writer::from_path(output_dir)?;
+    pub fn to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(output_path)?;
         out_writer.serialize(self.csv_head())?;
-        for action_idx in 0..config.n_actions as usize {
+        for action_idx in 0..self.q_table.n_actions as usize {
             out_writer.serialize(self.as_csv_record(action_idx))?;
         }
         out_writer.flush()?;
