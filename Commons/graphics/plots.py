@@ -8,9 +8,10 @@ from agent_plots import actions_ev_chart
 from experiment_plots import plot_double, plot_quad, plot_performance_over_time
 
 #agent_ev = pd.read_csv('../data/experiment_1/long/avg_rl_stats.csv')
-agent_ev = pd.read_csv('../data/single_agent/avg_rl_stats.csv')
+# agent_ev = pd.read_csv('../data/single_agent/avg_rl_stats.csv')
+agent_ev = pd.read_csv('../data/single_agent_multirun/avg_rl_stats.csv')
 data = genfromtxt('../data/test.csv', delimiter=',')
-p_data = pd.read_csv('../data/single_agent/1/gen_stats.csv')
+p_data = pd.read_csv('../data/single_agent_multirun/0/gen_stats.csv')
 #values = np.cumsum(np.random.randn(1000, 1))
 
 
