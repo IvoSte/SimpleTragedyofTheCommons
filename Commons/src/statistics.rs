@@ -105,16 +105,28 @@ pub struct ExperimentStatistics {
 }
 
 impl ExperimentStatistics {
-    pub fn new(generations_stats: Vec<GenerationStatistics>, rl_stats: RLStatistics) -> ExperimentStatistics {
-        ExperimentStatistics { generations_stats, rl_stats}
+    pub fn new(
+        generations_stats: Vec<GenerationStatistics>,
+        rl_stats: RLStatistics,
+    ) -> ExperimentStatistics {
+        ExperimentStatistics {
+            generations_stats,
+            rl_stats,
+        }
     }
 
     pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
         let mut path_1 = out_path.clone();
-        path_1.set_file_name("gen_stats.csv");
+        path_1.set_file_name("
+        gen_stats.csv");
         let mut path_2 = out_path.clone();
         path_2.set_file_name("rl_stats.csv");
-        println!("{:?} {:?} {:?}",out_path, &path_1.display(), &path_2.display());
+        println!(
+            "{:?} {:?} {:?}",
+            out_path,
+            &path_1.display(),
+            &path_2.display()
+        );
         self.gen_stats_to_csv(&path_1)?;
         self.rl_stats_to_csv(&path_2)?;
         Ok(())
@@ -133,7 +145,6 @@ impl ExperimentStatistics {
     pub fn rl_stats_to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
         self.rl_stats.to_csv(out_path)
     }
-
 }
 
 impl Statistics for ExperimentStatistics {
@@ -146,17 +157,17 @@ impl Statistics for ExperimentStatistics {
 }
 
 pub struct RLStatistics {
-    qtable : QTable,
+    qtable: QTable,
 }
 
 impl RLStatistics {
     pub fn new(qtable: QTable) -> RLStatistics {
-        RLStatistics{ qtable }
+        RLStatistics { qtable }
     }
 
     fn csv_head(&self) -> Vec<String> {
         let mut head: Vec<String> = Vec::new();
-        head.push("action_num".to_string()); 
+        head.push("action_num".to_string());
         for key in self.qtable.state_action_pairs.keys() {
             head.push(key.clone());
         }
@@ -180,7 +191,7 @@ impl RLStatistics {
         for action_idx in 0..config.n_actions as usize {
             out_writer.serialize(self.as_csv_record(action_idx))?;
         }
-        
+
         out_writer.flush()?;
         Ok(())
     }
