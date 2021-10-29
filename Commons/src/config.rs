@@ -31,6 +31,13 @@ impl Default for SimulationConfig {
     }
 }
 
+#[derive(Serialize, Deserialize, Default)]
+pub struct Config {
+    pub experiment: ExperimentConfig,
+    pub rl_params: RLParameters,
+    pub state_thresholds: StateThresholds,
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct ExperimentConfig {
     pub n_generations: i32,
@@ -59,25 +66,6 @@ impl Default for ExperimentConfig {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct StateThresholds {
-    pub commons_low: f32,
-    pub commons_med: f32,
-    pub score_low: i32,
-    pub score_med: i32,
-}
-
-impl Default for StateThresholds {
-    fn default() -> Self {
-        Self {
-            commons_low: 0.3, // percentage of max commons
-            commons_med: 0.7,
-            score_low: 2, // times consume
-            score_med: 6,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct RLParameters {
     pub epsilon: f32,
     pub alpha: f32,
@@ -92,6 +80,25 @@ impl Default for RLParameters {
             alpha: 0.05,
             gamma: 0.9,
             death_punish: 100000,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct StateThresholds {
+    pub commons_low: f32,
+    pub commons_med: f32,
+    pub score_low: i32,
+    pub score_med: i32,
+}
+
+impl Default for StateThresholds {
+    fn default() -> Self {
+        Self {
+            commons_low: 0.3, // percentage of max commons
+            commons_med: 0.7,
+            score_low: 2, // times consume
+            score_med: 6,
         }
     }
 }

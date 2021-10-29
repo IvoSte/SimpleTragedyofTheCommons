@@ -1,0 +1,21 @@
+[experiment]
+n_generations = 100000
+epochs_per_gen = 100
+n_agents = 10
+n_actions = 5
+init_pool_size = 120
+max_pool_size = 120
+regrowth_rate = 1.2
+consumption = 1
+
+[rl_params]
+epsilon = 0.01
+alpha = 0.05
+gamma = 0.9
+death_punish = 100000
+
+[state_thresholds]
+commons_low = 0.3
+commons_med = 0.7
+score_low = 2
+score_med = 6

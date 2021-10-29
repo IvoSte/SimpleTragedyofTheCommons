@@ -8,7 +8,9 @@ mod statistics;
 // Aliases
 use agent::Agent;
 use commons::Commons;
-use config::{CommandLineArgs, ExperimentConfig, RLParameters, SimulationConfig, StateThresholds};
+use config::{
+    CommandLineArgs, Config, ExperimentConfig, RLParameters, SimulationConfig, StateThresholds,
+};
 use csv::{Writer, WriterBuilder};
 use dialoguer::Confirm;
 use experiment::Experiment;
@@ -25,12 +27,10 @@ use structopt::StructOpt;
 
 use once_cell::sync::Lazy;
 
-
-static EXPERIMENT_CONFIG: Lazy<ExperimentConfig> = Lazy::new(||{match CommandLineArgs::from_args().config_path {
+static CONFIG: Lazy<Config> = Lazy::new(|| match CommandLineArgs::from_args().config_path {
     Some(path) => confy::load_path(path).unwrap(),
     _ => Default::default(),
-}});
-
+});
 
 fn make_agents(n_agents: i32, n_actions: i32) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents as usize);
@@ -202,16 +202,19 @@ fn _write_stats(stats: Vec<ExperimentStatistics>, output_dir: PathBuf) {
 
 fn main() {
     let args = CommandLineArgs::from_args();
-    let cfg: ExperimentConfig = match args.config_path {
-        Some(path) => confy::load_path(path).unwrap(),
-        _ => Default::default(),
-    };
+    // let cfg: ExperimentConfig = match args.config_path {
+    //     Some(path) => confy::load_path(path).unwrap(),
+    //     _ => Default::default(),
+    // };
 
     // TODO: Optionally, allow config file for sim
     // config, instead of command line argument
     let mut sim_config: SimulationConfig = Default::default();
     sim_config.n_experiments = args.n_experiments;
 
+
+    let cfg = CONFIG.experiment;
+    
     println!(
         "Running {} experiment{} with {} generations",
         sim_config.n_experiments,
@@ -220,7 +223,7 @@ fn main() {
         } else {
             ""
         },
-        EXPERIMENT_CONFIG.n_generations
+        CONFIG.experiment.n_generations
     );
 
     if args.output_dir.as_path().exists() {

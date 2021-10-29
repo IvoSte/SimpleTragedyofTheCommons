@@ -7,7 +7,7 @@ use strum_macros::EnumIter;
 
 use crate::agent::actions::{Action, Actions};
 use crate::config::{ExperimentConfig, StateThresholds};
-use crate::Agent;
+use crate::{Agent, CONFIG};
 
 pub enum AgentType {
     BANDIT,
@@ -44,14 +44,13 @@ impl AgentState {
     }
     // Maybe wierd way to initialize?
     pub fn from_values(commons_value: i32, score_value: i32) -> AgentState {
-        let config: ExperimentConfig = Default::default();
 
         let mut agentstate = AgentState {
             commons_state: ResourceState::MEDIUM,
             score_state: ResourceState::MEDIUM,
         };
-        agentstate.map_commons(commons_value, config.max_pool_size);
-        agentstate.map_score(score_value, config.consumption);
+        agentstate.map_commons(commons_value, CONFIG.experiment.max_pool_size);
+        agentstate.map_score(score_value, CONFIG.experiment.consumption);
         return agentstate;
     }
     // this is a mess, refactor TODO. should be some global config map dynamically determined using key values/bounds
