@@ -1,0 +1,8 @@
+n_generations = 100000
+epochs_per_gen = 200
+n_agents = 1
+n_actions = 5
+init_pool_size = 12
+max_pool_size = 12
+regrowth_rate = 1.2
+consumption = 1

@@ -163,15 +163,15 @@ impl Experiment {
 
         let consumption = self.config.consumption;
         let pool = self.commons.resource_pool;
-        self.agents.iter_mut().for_each(|agent| {
-            if !agent.is_alive() {
-                return;
-            }
-            agent.consume(consumption);
-            agent.update_state(pool);
-            agent.learn();
-        });
 
+        for agent in &mut self.agents {
+            if agent.is_alive() {
+                agent.consume(consumption);
+                agent.update_state(pool);
+                agent.learn();
+            }
+        }
+        
         EpochStatistics::new(
             epoch_number,
             self.agents.iter().filter(|agent| agent.is_alive()).count() as i32,

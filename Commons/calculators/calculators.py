@@ -7,7 +7,7 @@ def equilibrium_calculator(agents, max_r, r):
 
 
 def main():
-    equilibrium_calculator(10, 120, 1.2)
+    equilibrium_calculator(1, 12, 1.2)
 
 if __name__ == "__main__":
     main()
