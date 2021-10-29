@@ -136,6 +136,23 @@ impl ExperimentStatistics {
             rl_stats,
         }
     }
+
+    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut path_1 = out_path.clone();
+        path_1.set_file_name("
+        gen_stats.csv");
+        let mut path_2 = out_path.clone();
+        path_2.set_file_name("rl_stats.csv");
+        println!(
+            "{:?} {:?} {:?}",
+            out_path,
+            &path_1.display(),
+            &path_2.display()
+        );
+        self.gen_stats_to_csv(&path_1)?;
+        self.rl_stats_to_csv(&path_2)?;
+        Ok(())
+    }
 }
 
 impl ExperimentOutput for ExperimentStatistics {
@@ -162,6 +179,7 @@ impl Statistics for ExperimentStatistics {
         )
     }
 }
+
 
 #[derive(Serialize)]
 pub struct AverageGenerationStatistics {
@@ -283,7 +301,50 @@ impl RLStatistics {
         Ok(())
     }
 
-    pub fn get_q_table(&self) -> &QTable {
-        &self.q_table
-    }
+
 }
+
+// pub struct RLStatistics {
+//     qtable: QTable,
+// }
+
+// impl RLStatistics {
+//     pub fn new(qtable: QTable) -> RLStatistics {
+//         RLStatistics { qtable }
+//     }
+
+//     fn csv_head(&self) -> Vec<String> {
+//         let mut head: Vec<String> = Vec::new();
+//         head.push("action_num".to_string());
+//         for key in self.qtable.state_action_pairs.keys() {
+//             head.push(key.clone());
+//         }
+//         head
+//     }
+
+//     fn as_csv_record(&self, action_num: usize) -> Vec<f32> {
+//         let mut action_evs: Vec<f32> = Vec::new();
+//         action_evs.push(action_num as f32);
+//         for (_key, value) in &self.qtable.state_action_pairs {
+//             action_evs.push(value[action_num].get_expected_value());
+//         }
+//         action_evs
+//     }
+
+//     pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+//         let config: ExperimentConfig = Default::default();
+
+//         let mut out_writer = Writer::from_path(out_path)?;
+//         out_writer.serialize(self.csv_head())?;
+//         for action_idx in 0..config.n_actions as usize {
+//             out_writer.serialize(self.as_csv_record(action_idx))?;
+//         }
+
+//         out_writer.flush()?;
+//         Ok(())
+//     }
+    
+//     pub fn get_q_table(&self) -> &QTable {
+//         &self.q_table
+//     }
+// }
