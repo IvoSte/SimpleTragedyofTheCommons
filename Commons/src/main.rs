@@ -9,12 +9,14 @@ mod statistics;
 use agent::Agent;
 use commons::Commons;
 use config::{CommandLineArgs, ExperimentConfig, RLParameters, SimulationConfig, StateThresholds};
-use csv::Writer;
+use csv::{Writer, WriterBuilder};
+use dialoguer::Confirm;
 use experiment::Experiment;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statistics::{
     AverageExperimentStatistics, ExperimentOutput, ExperimentStatistics, RLStatistics,
 };
+use std::error::Error;
 use std::fs;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
@@ -67,23 +69,22 @@ fn run_experiments_incremental_output(
     n_experiments: i32,
     cfg: ExperimentConfig,
     output_dir: PathBuf,
-) {
-    fs::create_dir_all(&output_dir).expect("Could not create output dir");
+) -> Result<(), Box<dyn Error>> {
+    fs::create_dir_all(&output_dir)?;
 
     let mut exp_config_path = output_dir.clone();
     exp_config_path.push("experiment.toml");
-    confy::store_path(exp_config_path, cfg).expect("Could not write experiment config");
+    confy::store_path(exp_config_path, cfg)?;
 
     let mut rl_params_path = output_dir.clone();
     rl_params_path.push("rl_params.toml");
     let rl_params: RLParameters = Default::default();
-    confy::store_path(rl_params_path, rl_params).expect("Could not write RL parameters");
+    confy::store_path(rl_params_path, rl_params)?;
 
     let mut state_thresholds_path = output_dir.clone();
     state_thresholds_path.push("state_thresholds.toml");
     let state_thresholds: StateThresholds = Default::default();
-    confy::store_path(state_thresholds_path, state_thresholds)
-        .expect("Could not write state thresholds");
+    confy::store_path(state_thresholds_path, state_thresholds)?;
 
     let multi_progress = MultiProgress::new();
     let (sender, receiver) = channel();
@@ -96,7 +97,7 @@ fn run_experiments_incremental_output(
         let new_sender = sender.clone();
         let mut exp_output_dir = output_dir.clone();
         exp_output_dir.push(exp_idx.to_string());
-        fs::create_dir_all(&exp_output_dir).expect("Could not create experiment output dir");
+        fs::create_dir_all(&exp_output_dir)?;
         rayon::spawn(move || {
             let mut experiment = Experiment::new(
                 cfg.n_generations,
@@ -112,7 +113,7 @@ fn run_experiments_incremental_output(
             );
             let mut gen_stats_path = exp_output_dir.clone();
             gen_stats_path.push("gen_stats.csv");
-            let mut gen_stats_csv_writer = Writer::from_writer(
+            let mut gen_stats_csv_writer = WriterBuilder::new().has_headers(false).from_writer(
                 OpenOptions::new()
                     .write(true)
                     .create(true)
@@ -120,6 +121,17 @@ fn run_experiments_incremental_output(
                     .open(gen_stats_path)
                     .unwrap(),
             );
+            let mut gen_stats_header: Vec<String> = vec![
+                "gen_num".to_string(),
+                "epochs_ran".to_string(),
+                "reached_equilibrium".to_string(),
+                "agents_alive".to_string(),
+            ];
+            (0..cfg.n_actions)
+                .for_each(|idx| gen_stats_header.push(format!("times_chosen_{}", idx)));
+            gen_stats_csv_writer
+                .write_record(gen_stats_header)
+                .expect("Could not write gen stats header");
             let rl_stats = experiment.run_incremental_output(pb, &mut gen_stats_csv_writer);
             let mut rl_stats_path = exp_output_dir.clone();
             rl_stats_path.push("rl_stats.csv");
@@ -132,13 +144,15 @@ fn run_experiments_incremental_output(
     }
 
     drop(sender);
-    multi_progress.join().expect("Progress bars failed");
+    multi_progress.join()?;
     let mut avg_rl_stats_path = output_dir.clone();
     avg_rl_stats_path.push("avg_rl_stats.csv");
     match RLStatistics::average_from_vector(receiver.iter().collect()).to_csv(&avg_rl_stats_path) {
         Ok(_) => println!("Succesfully wrote average RL Statistics"),
         Err(e) => println!("Failed to write average RL Statistics: \n {}", e),
     }
+
+    Ok(())
 }
 
 /// Write stats from a vector of experiment statistics
@@ -200,5 +214,28 @@ fn main() {
         cfg.n_generations
     );
 
-    run_experiments_incremental_output(sim_config.n_experiments, cfg, args.output_dir);
+    if args.output_dir.as_path().exists() {
+        if Confirm::new()
+            .with_prompt("Output directory already exists. Remove old contents?")
+            .interact()
+            .unwrap()
+        {
+            match fs::remove_dir_all(&args.output_dir) {
+                Ok(_) => println!("Removed {} and its contents", args.output_dir.display()),
+                Err(e) => println!(
+                    "Failed to remove output directory and / or its contents: \n {}",
+                    e
+                ),
+            }
+        } else {
+            println!("Not removing existing output directory. Please run the simulation with a different output directory.");
+            return;
+        }
+    }
+
+    if let Err(e) =
+        run_experiments_incremental_output(sim_config.n_experiments, cfg, args.output_dir)
+    {
+        eprintln!("Error while running experiment: {}", e);
+    }
 }
