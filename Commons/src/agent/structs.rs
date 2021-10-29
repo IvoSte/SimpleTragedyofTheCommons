@@ -1,12 +1,13 @@
-use crate::agent::actions::Actions;
-use crate::config::{ExperimentConfig, StateThresholds};
 use core::panic;
-use rayon::ThreadPoolBuildError;
+
 use std::{collections::HashMap, fmt};
+
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use super::Agent;
+use crate::agent::actions::{Action, Actions};
+use crate::config::{ExperimentConfig, StateThresholds};
+use crate::Agent;
 
 pub enum AgentType {
     BANDIT,
@@ -25,6 +26,7 @@ impl fmt::Display for ResourceState {
         write!(f, "{:?}", self)
     }
 }
+
 #[derive(Clone, Copy)]
 pub struct AgentState {
     commons_state: ResourceState,
@@ -57,7 +59,7 @@ impl AgentState {
         // resource state of the commons as seen by the agent. Below 30% is low (maybe this needs to be upped)
         // below 70% is medium
         // above 70% is high
-        let cfg: StateThresholds = Default::default();
+        let cfg: StateThresholds = Default::default(); // TODO: Allow passing non-default state thresholds
 
         if (commons_value as f32) < (cfg.commons_low * max_commons_value as f32) {
             self.commons_state = ResourceState::LOW;
@@ -70,7 +72,7 @@ impl AgentState {
 
     pub fn map_score(&mut self, score_value: i32, consume_value: i32) {
         // resource state of the agents score. Have food for x days, you're low, medium or high on resources.
-        let cfg: StateThresholds = Default::default();
+        let cfg: StateThresholds = Default::default(); // TODO: Allow passing non-default state thresholds
 
         if score_value <= cfg.score_low * consume_value {
             self.score_state = ResourceState::LOW;
@@ -81,47 +83,60 @@ impl AgentState {
         }
     }
 
-    pub fn statekeys() -> Vec<String> {
+    pub fn state_keys() -> Vec<String> {
         let mut vec: Vec<String> = Vec::new();
         // loop over all state permutations
         for state_1 in ResourceState::iter() {
             for state_2 in ResourceState::iter() {
                 // state permutation is the key in the table
-                let statekey =
+                let state_key =
                     String::from(format!("{} {}", state_1.to_string(), state_2.to_string()));
-                vec.push(statekey);
+                vec.push(state_key);
             }
         }
-        return vec;
+        vec
     }
 }
 
 pub struct QTable {
+    pub n_actions: i32,
     pub state_action_pairs: HashMap<String, Actions>,
 }
 
 impl QTable {
     pub fn new(n_actions: i32) -> QTable {
         let mut state_action_pairs: HashMap<String, Actions> = HashMap::new();
-        let statekeys = AgentState::statekeys();
-        for statekey in statekeys {
-            state_action_pairs.insert(statekey, Actions::new(n_actions));
+        let state_keys = AgentState::state_keys();
+        for state_key in state_keys {
+            state_action_pairs.insert(state_key, Actions::new(n_actions));
         }
-        QTable { state_action_pairs }
+        QTable {
+            n_actions,
+            state_action_pairs,
+        }
     }
 
-    pub fn get_mut(&mut self, key: String) -> &mut Actions {
-        match self.state_action_pairs.get_mut(&key) {
+    pub fn get_mut(&mut self, key: &String) -> &mut Actions {
+        match self.state_action_pairs.get_mut(key) {
             Some(actions) => actions,
             None => panic!("Tried to access state that isn't there"),
         }
     }
 
-    pub fn get(&self, key: String) -> &Actions {
-        match self.state_action_pairs.get(&key) {
+    /// Get action in a specific state
+    pub fn get_action_mut(&mut self, key: &String, action_idx: usize) -> &mut Action {
+        &mut self.get_mut(key)[action_idx]
+    }
+
+    pub fn get(&self, key: &String) -> &Actions {
+        match self.state_action_pairs.get(key) {
             Some(actions) => actions,
             None => panic!("Tried to access state that isn't there"),
         }
+    }
+
+    pub fn get_action(&self, key: &String, action_idx: usize) -> &Action {
+        &self.get(key)[action_idx]
     }
 
     pub fn report(&self) {
@@ -131,29 +146,44 @@ impl QTable {
         }
     }
 
-    pub fn average_qtable(agents: &Vec<Agent>) -> QTable {
-        let config: ExperimentConfig = Default::default();
+    pub fn average_q_table(agents: &Vec<Agent>) -> QTable {
+        Self::average_from_vector(&agents.iter().map(|agent| &agent.brain.q_table).collect())
+    }
 
-        let mut avg_qtable = QTable::new(config.n_actions);
-        for agent in agents {
-            for state in AgentState::statekeys() {
-                for action_idx in 0..config.n_actions as usize {
-                    let old_value = avg_qtable.get(state.clone())[action_idx].get_expected_value();
-                    let new_value = old_value
-                        + agent.brain.q_table.get(state.clone())[action_idx].get_expected_value();
-                    avg_qtable.get_mut(state.clone())[action_idx].set_expected_value(new_value);
+    pub fn average_from_vector(q_tables: &Vec<&QTable>) -> QTable {
+        let n_actions = q_tables[0].n_actions;
+        let mut avg_q_table = QTable::new(n_actions);
+        let state_keys = &AgentState::state_keys();
+
+        // Sum the EVs from all QTables
+        for q_table in q_tables {
+            for state in state_keys {
+                for action_idx in 0..n_actions as usize {
+                    let old_value = avg_q_table
+                        .get_action(state, action_idx)
+                        .get_expected_value();
+                    let new_value =
+                        old_value + q_table.get_action(state, action_idx).get_expected_value();
+                    avg_q_table
+                        .get_action_mut(state, action_idx)
+                        .set_expected_value(new_value);
                 }
             }
         }
 
-        for state in AgentState::statekeys() {
-            for action_idx in 0..config.n_actions as usize {
-                let old_value = avg_qtable.get(state.clone())[action_idx].get_expected_value();
-                let new_value = old_value / agents.len() as f32;
-                avg_qtable.get_mut(state.clone())[action_idx].set_expected_value(new_value);
+        // Divide values by number of QTables to compute average EVs
+        let n_tables = q_tables.len() as f32;
+        for state in state_keys {
+            for action_idx in 0..n_actions as usize {
+                let old_value = avg_q_table
+                    .get_action(state, action_idx)
+                    .get_expected_value();
+                avg_q_table
+                    .get_action_mut(state, action_idx)
+                    .set_expected_value(old_value / n_tables);
             }
         }
 
-        return avg_qtable;
+        avg_q_table
     }
 }

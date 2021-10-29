@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::path::PathBuf;
 
 use csv::Writer;
 use rayon::prelude::*;
@@ -99,6 +100,22 @@ impl Statistics for GenerationStatistics {
     }
 }
 
+pub trait ExperimentOutput {
+    fn to_csvs(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut path_1 = output_dir.clone();
+        path_1.push("gen_stats.csv");
+        let mut path_2 = output_dir.clone();
+        path_2.push("rl_stats.csv");
+        self.gen_stats_to_csv(&path_1)?;
+        self.rl_stats_to_csv(&path_2)?;
+        Ok(())
+    }
+
+    fn gen_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>>;
+
+    fn rl_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>>;
+}
+
 pub struct ExperimentStatistics {
     generations_stats: Vec<GenerationStatistics>,
     rl_stats: RLStatistics,
@@ -131,9 +148,11 @@ impl ExperimentStatistics {
         self.rl_stats_to_csv(&path_2)?;
         Ok(())
     }
+}
 
-    pub fn gen_stats_to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let mut out_writer = Writer::from_path(out_path)?;
+impl ExperimentOutput for ExperimentStatistics {
+    fn gen_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(output_path)?;
         for gen in &self.generations_stats {
             out_writer.serialize(gen.as_csv_record())?;
         }
@@ -142,8 +161,8 @@ impl ExperimentStatistics {
         Ok(())
     }
 
-    pub fn rl_stats_to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        self.rl_stats.to_csv(out_path)
+    fn rl_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        self.rl_stats.to_csv(output_path)
     }
 }
 
@@ -206,11 +225,12 @@ pub struct AverageGenerationStatistics {
 
 pub struct AverageExperimentStatistics {
     avg_gen_stats: Vec<AverageGenerationStatistics>,
+    avg_rl_stats: RLStatistics,
 }
 
 impl AverageExperimentStatistics {
     pub fn from_vector(
-        experiments_stats: Vec<ExperimentStatistics>,
+        experiments_stats: &Vec<ExperimentStatistics>,
     ) -> AverageExperimentStatistics {
         let n_gens = experiments_stats[0].generations_stats.len();
         let n_experiments = experiments_stats.len();
@@ -226,7 +246,7 @@ impl AverageExperimentStatistics {
             .map(|gen_idx| {
                 let mut sum_epochs_ran: f32 = 0.;
                 let mut sum_agents_alive: f32 = 0.;
-                for stats in &experiments_stats {
+                for stats in experiments_stats {
                     let gen_stats = &stats.generations_stats[gen_idx];
                     sum_epochs_ran += gen_stats.epochs_stats.len() as f32;
                     sum_agents_alive += gen_stats.agents_alive as f32;
@@ -240,16 +260,74 @@ impl AverageExperimentStatistics {
             })
             .collect();
 
-        AverageExperimentStatistics { avg_gen_stats }
-    }
+        let q_tables: Vec<&QTable> = experiments_stats
+            .iter()
+            .map(|stats| stats.rl_stats.get_q_table())
+            .collect();
 
-    pub fn to_csv(&self, out_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
-        let mut out_writer = Writer::from_path(out_path)?;
+        AverageExperimentStatistics {
+            avg_gen_stats,
+            avg_rl_stats: RLStatistics::new(QTable::average_from_vector(&q_tables)),
+        }
+    }
+}
+
+impl ExperimentOutput for AverageExperimentStatistics {
+    fn gen_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut out_writer = Writer::from_path(output_path)?;
         for gen in &self.avg_gen_stats {
             out_writer.serialize(gen)?;
         }
 
         out_writer.flush()?;
         Ok(())
+    }
+
+    fn rl_stats_to_csv(&self, output_path: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        self.avg_rl_stats.to_csv(output_path)
+    }
+}
+
+pub struct RLStatistics {
+    q_table: QTable,
+}
+
+impl RLStatistics {
+    pub fn new(q_table: QTable) -> RLStatistics {
+        RLStatistics { q_table }
+    }
+
+    fn csv_head(&self) -> Vec<String> {
+        let mut head: Vec<String> = Vec::new();
+        head.push("action_num".to_string());
+        for key in self.q_table.state_action_pairs.keys() {
+            head.push(key.clone());
+        }
+        head
+    }
+
+    fn as_csv_record(&self, action_num: usize) -> Vec<f32> {
+        let mut action_evs: Vec<f32> = Vec::new();
+        action_evs.push(action_num as f32);
+        for (_key, value) in &self.q_table.state_action_pairs {
+            action_evs.push(value[action_num].get_expected_value());
+        }
+        action_evs
+    }
+
+    pub fn to_csv(&self, output_dir: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        let config: ExperimentConfig = Default::default();
+
+        let mut out_writer = Writer::from_path(output_dir)?;
+        out_writer.serialize(self.csv_head())?;
+        for action_idx in 0..config.n_actions as usize {
+            out_writer.serialize(self.as_csv_record(action_idx))?;
+        }
+        out_writer.flush()?;
+        Ok(())
+    }
+
+    pub fn get_q_table(&self) -> &QTable {
+        &self.q_table
     }
 }

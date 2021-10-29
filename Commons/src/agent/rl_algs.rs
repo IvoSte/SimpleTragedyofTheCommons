@@ -2,22 +2,30 @@ use crate::agent::actions::{Action, Actions};
 use crate::agent::structs::{AgentState, QTable};
 use rand::Rng;
 
-
-
-pub fn qlearning(qtable: &mut QTable, state: String, epsilon: f32) -> &mut Action {
-    epsilon_greedy(qtable.get_mut(state), epsilon)
+pub fn qlearning<'a>(q_table: &'a mut QTable, state: &String, epsilon: f32) -> &'a mut Action {
+    epsilon_greedy(q_table.get_mut(state), epsilon)
 }
 
-pub fn update_qlearning(qtable: &mut QTable, old_state: &AgentState, new_state: &AgentState, 
-                        action_idx: usize, reward: i32, alpha: f32, gamma: f32) {
+pub fn update_qlearning(
+    q_table: &mut QTable,
+    old_state: &AgentState,
+    new_state: &AgentState,
+    action_idx: usize,
+    reward: i32,
+    alpha: f32,
+    gamma: f32,
+) {
     // from value
-    let old_ev: f32 = qtable.get(old_state.to_string())[action_idx].get_expected_value();
+    let old_ev: f32 = q_table.get(&old_state.to_string())[action_idx].get_expected_value();
     // off-policy best new action
-    let max_next_ev: f32 = qtable.get_mut(new_state.to_string()).max_ev_action().get_expected_value();
+    let max_next_ev: f32 = q_table
+        .get_mut(&new_state.to_string())
+        .max_ev_action()
+        .get_expected_value();
     // calculate new ev
     let new_ev: f32 = old_ev + (alpha * (reward as f32 + (gamma * max_next_ev) - old_ev));
     // update ev
-    qtable.get_mut(old_state.to_string())[action_idx].set_expected_value(new_ev);
+    q_table.get_mut(&old_state.to_string())[action_idx].set_expected_value(new_ev);
 }
 
 pub fn bandit(actions: &mut Actions, epsilon: f32) -> &mut Action {
@@ -41,5 +49,3 @@ pub fn epsilon_greedy(actions: &mut Actions, epsilon: f32) -> &mut Action {
         actions.max_ev_action()
     }
 }
-
-//}

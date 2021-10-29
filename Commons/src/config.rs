@@ -2,7 +2,6 @@ use structopt::StructOpt;
 
 use serde::{Deserialize, Serialize};
 
-/// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
 #[structopt(
     name = "Tragedy of the Commons",
@@ -14,8 +13,8 @@ pub struct CommandLineArgs {
     pub config_path: Option<std::path::PathBuf>,
 
     /// Path to output csv file
-    #[structopt(short, long = "out_path", parse(from_os_str))]
-    pub out_path: Option<std::path::PathBuf>,
+    #[structopt(short, long = "output_dir", parse(from_os_str))]
+    pub output_dir: Option<std::path::PathBuf>,
 
     #[structopt(short, long)]
     pub n_experiments: Option<i32>,
@@ -47,7 +46,7 @@ pub struct ExperimentConfig {
 impl Default for ExperimentConfig {
     fn default() -> Self {
         Self {
-            n_generations: 100,
+            n_generations: 100000,
             epochs_per_gen: 100,
             n_agents: 10,
             n_actions: 5,
@@ -59,6 +58,7 @@ impl Default for ExperimentConfig {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct StateThresholds {
     pub commons_low: f32,
     pub commons_med: f32,
@@ -76,6 +76,8 @@ impl Default for StateThresholds {
         }
     }
 }
+
+#[derive(Serialize, Deserialize)]
 pub struct RLParameters {
     pub epsilon: f32,
     pub alpha: f32,
@@ -87,7 +89,7 @@ impl Default for RLParameters {
     fn default() -> Self {
         Self {
             epsilon: 0.01,
-            alpha: 0.2,
+            alpha: 0.05,
             gamma: 0.9,
             death_punish: 100000,
         }

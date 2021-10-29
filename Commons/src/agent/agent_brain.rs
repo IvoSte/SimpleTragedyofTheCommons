@@ -24,7 +24,7 @@ impl AgentBrain {
             current_state: None,
             previous_state: None,
             behaviour_type: agent_type,
-            rlparameters: Default::default(),
+            rlparameters: Default::default(), // TODO: Allow passing a non-default param object
         }
     }
 
@@ -42,7 +42,7 @@ impl AgentBrain {
             AgentType::BANDIT => bandit(&mut self.actions, self.rlparameters.epsilon),
             AgentType::QLEARNING => qlearning(
                 &mut self.q_table,
-                self.current_state.unwrap().to_string().clone(),
+                &self.current_state.unwrap().to_string(),
                 self.rlparameters.epsilon,
             ),
         }
@@ -82,7 +82,7 @@ impl AgentBrain {
     pub fn report(&self) {
         match self.behaviour_type {
             AgentType::BANDIT => self.report_action_evs(),
-            AgentType::QLEARNING => self.report_q_table()
+            AgentType::QLEARNING => self.report_q_table(),
         }
     }
 
