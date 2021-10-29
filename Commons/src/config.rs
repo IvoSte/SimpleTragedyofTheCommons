@@ -1,3 +1,4 @@
+use dialoguer::theme::SimpleTheme;
 use structopt::StructOpt;
 
 use serde::{Deserialize, Serialize};
@@ -20,22 +21,14 @@ pub struct CommandLineArgs {
     pub n_experiments: i32,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SimulationConfig {
-    pub n_experiments: i32,
-}
 
-impl Default for SimulationConfig {
-    fn default() -> Self {
-        Self { n_experiments: 1 }
-    }
-}
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Copy, Clone)]
 pub struct Config {
     pub experiment: ExperimentConfig,
     pub rl_params: RLParameters,
     pub state_thresholds: StateThresholds,
+    pub simulation: SimulationConfig,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
@@ -65,7 +58,7 @@ impl Default for ExperimentConfig {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct RLParameters {
     pub epsilon: f32,
     pub alpha: f32,
@@ -84,7 +77,7 @@ impl Default for RLParameters {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct StateThresholds {
     pub commons_low: f32,
     pub commons_med: f32,
@@ -100,5 +93,16 @@ impl Default for StateThresholds {
             score_low: 2, // times consume
             score_med: 6,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone)]
+pub struct SimulationConfig {
+    pub n_experiments: i32,
+}
+
+impl Default for SimulationConfig {
+    fn default() -> Self {
+        Self { n_experiments: 1 }
     }
 }

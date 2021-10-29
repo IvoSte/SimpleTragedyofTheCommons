@@ -58,11 +58,10 @@ impl AgentState {
         // resource state of the commons as seen by the agent. Below 30% is low (maybe this needs to be upped)
         // below 70% is medium
         // above 70% is high
-        let cfg: StateThresholds = Default::default(); // TODO: Allow passing non-default state thresholds
 
-        if (commons_value as f32) < (cfg.commons_low * max_commons_value as f32) {
+        if (commons_value as f32) < (CONFIG.state_thresholds.commons_low * max_commons_value as f32) {
             self.commons_state = ResourceState::LOW;
-        } else if (commons_value as f32) < (cfg.commons_med * max_commons_value as f32) {
+        } else if (commons_value as f32) < (CONFIG.state_thresholds.commons_med * max_commons_value as f32) {
             self.commons_state = ResourceState::MEDIUM;
         } else {
             self.commons_state = ResourceState::HIGH;
@@ -71,11 +70,10 @@ impl AgentState {
 
     pub fn map_score(&mut self, score_value: i32, consume_value: i32) {
         // resource state of the agents score. Have food for x days, you're low, medium or high on resources.
-        let cfg: StateThresholds = Default::default(); // TODO: Allow passing non-default state thresholds
 
-        if score_value <= cfg.score_low * consume_value {
+        if score_value <= CONFIG.state_thresholds.score_low * consume_value {
             self.score_state = ResourceState::LOW;
-        } else if score_value <= cfg.score_med * consume_value {
+        } else if score_value <= CONFIG.state_thresholds.score_med * consume_value {
             self.score_state = ResourceState::MEDIUM;
         } else {
             self.score_state = ResourceState::HIGH;

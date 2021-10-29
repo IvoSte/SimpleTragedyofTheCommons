@@ -1,3 +1,4 @@
+use crate::CONFIG;
 //use std::num;
 use crate::agent::actions::{Action, Actions};
 use crate::agent::rl_algs::{bandit, qlearning, update_bandit, update_qlearning};
@@ -24,7 +25,7 @@ impl AgentBrain {
             current_state: None,
             previous_state: None,
             behaviour_type: agent_type,
-            rlparameters: Default::default(), // TODO: Allow passing a non-default param object
+            rlparameters: CONFIG.rl_params,
         }
     }
 

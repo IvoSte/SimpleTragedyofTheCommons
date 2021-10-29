@@ -81,19 +81,11 @@ fn run_experiments_incremental_output(
 ) -> Result<(), Box<dyn Error>> {
     fs::create_dir_all(&output_dir)?;
 
+
     let mut exp_config_path = output_dir.clone();
     exp_config_path.push("experiment.toml");
-    confy::store_path(exp_config_path, cfg)?;
+    confy::store_path(exp_config_path, *CONFIG)?;
 
-    let mut rl_params_path = output_dir.clone();
-    rl_params_path.push("rl_params.toml");
-    let rl_params: RLParameters = Default::default();
-    confy::store_path(rl_params_path, rl_params)?;
-
-    let mut state_thresholds_path = output_dir.clone();
-    state_thresholds_path.push("state_thresholds.toml");
-    let state_thresholds: StateThresholds = Default::default();
-    confy::store_path(state_thresholds_path, state_thresholds)?;
 
     let multi_progress = MultiProgress::new();
     let (sender, receiver) = channel();
@@ -202,23 +194,16 @@ fn _write_stats(stats: Vec<ExperimentStatistics>, output_dir: PathBuf) {
 
 fn main() {
     let args = CommandLineArgs::from_args();
-    // let cfg: ExperimentConfig = match args.config_path {
-    //     Some(path) => confy::load_path(path).unwrap(),
-    //     _ => Default::default(),
-    // };
 
     // TODO: Optionally, allow config file for sim
     // config, instead of command line argument
-    let mut sim_config: SimulationConfig = Default::default();
-    sim_config.n_experiments = args.n_experiments;
-
 
     let cfg = CONFIG.experiment;
-    
+
     println!(
         "Running {} experiment{} with {} generations",
-        sim_config.n_experiments,
-        if sim_config.n_experiments > 1 {
+        CONFIG.simulation.n_experiments,
+        if CONFIG.simulation.n_experiments > 1 {
             "s"
         } else {
             ""
@@ -246,7 +231,7 @@ fn main() {
     }
 
     if let Err(e) =
-        run_experiments_incremental_output(sim_config.n_experiments, cfg, args.output_dir)
+        run_experiments_incremental_output(CONFIG.simulation.n_experiments, cfg, args.output_dir)
     {
         eprintln!("Error while running experiment: {}", e);
     }
