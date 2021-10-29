@@ -100,4 +100,8 @@ impl AgentBrain {
         // better encapsulate this, agent brain should not know the size of the pool
         self.current_state = Some(AgentState::from_values(pool, score));
     }
+
+    pub fn get_current_state(&self) -> Option<AgentState> {
+        self.current_state
+    }
 }

@@ -6,26 +6,27 @@ mod experiment;
 mod statistics;
 
 // Aliases
-use agent::Agent;
-use commons::Commons;
-use config::{
-    CommandLineArgs, Config, ExperimentConfig, RLParameters, SimulationConfig, StateThresholds,
-};
-use csv::{Writer, WriterBuilder};
-use dialoguer::Confirm;
-use experiment::Experiment;
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use statistics::{
-    AverageExperimentStatistics, ExperimentOutput, ExperimentStatistics, RLStatistics,
-};
 use std::error::Error;
 use std::fs;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
+
+use csv::WriterBuilder;
+use dialoguer::Confirm;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
-use once_cell::sync::Lazy;
+use agent::structs::AgentState;
+use agent::Agent;
+use commons::Commons;
+use config::{CommandLineArgs, Config};
+use experiment::Experiment;
+use statistics::{
+    AverageExperimentStatistics, ExperimentOutput, ExperimentStatistics, GenerationStatistics,
+    RLStatistics,
+};
 
 static CONFIG: Lazy<Config> = Lazy::new(|| match CommandLineArgs::from_args().config_path {
     Some(path) => confy::load_path(path).unwrap(),
@@ -45,47 +46,17 @@ fn regrow(current_amount: i32, regrowth_rate: f32) -> i32 {
     (current_amount as f32 * regrowth_rate) as i32
 }
 
-/// Run experiments without any output, basically pointless but still exists for reference
-fn _run_experiments(n_experiments: i32, cfg: ExperimentConfig) {
-    let multi_progress = MultiProgress::new();
-    for _ in 0..n_experiments {
-        let pb = multi_progress.add(ProgressBar::new(cfg.n_generations as u64));
-        pb.set_style(
-            ProgressStyle::default_bar()
-                .template("[{elapsed_precise}] {bar:40.green} {pos:>7}/{len:7} {msg}"),
-        );
-        rayon::spawn(move || {
-            let mut experiment = Experiment::new(
-                cfg.n_generations,
-                cfg.epochs_per_gen,
-                make_agents(cfg.n_agents, cfg.n_actions),
-                Commons::new(
-                    cfg.init_pool_size as i32,
-                    cfg.max_pool_size as i32,
-                    regrow,
-                    cfg.regrowth_rate,
-                ),
-                cfg,
-            );
-            experiment.run(pb);
-        });
-    }
-
-    multi_progress.join().expect("Progress bars failed");
-}
-
 fn run_experiments_incremental_output(
     n_experiments: i32,
-    cfg: ExperimentConfig,
     output_dir: PathBuf,
 ) -> Result<(), Box<dyn Error>> {
-    fs::create_dir_all(&output_dir)?;
+    let cfg = CONFIG.experiment;
 
+    fs::create_dir_all(&output_dir)?;
 
     let mut exp_config_path = output_dir.clone();
     exp_config_path.push("experiment.toml");
     confy::store_path(exp_config_path, *CONFIG)?;
-
 
     let multi_progress = MultiProgress::new();
     let (sender, receiver) = channel();
@@ -122,16 +93,8 @@ fn run_experiments_incremental_output(
                     .open(gen_stats_path)
                     .unwrap(),
             );
-            let mut gen_stats_header: Vec<String> = vec![
-                "gen_num".to_string(),
-                "epochs_ran".to_string(),
-                "reached_equilibrium".to_string(),
-                "agents_alive".to_string(),
-            ];
-            (0..cfg.n_actions)
-                .for_each(|idx| gen_stats_header.push(format!("times_chosen_{}", idx)));
             gen_stats_csv_writer
-                .write_record(gen_stats_header)
+                .write_record(GenerationStatistics::csv_header())
                 .expect("Could not write gen stats header");
             let rl_stats = experiment.run_incremental_output(pb, &mut gen_stats_csv_writer);
             let mut rl_stats_path = exp_output_dir.clone();
@@ -198,8 +161,6 @@ fn main() {
     // TODO: Optionally, allow config file for sim
     // config, instead of command line argument
 
-    let cfg = CONFIG.experiment;
-
     println!(
         "Running {} experiment{} with {} generations",
         CONFIG.simulation.n_experiments,
@@ -231,7 +192,7 @@ fn main() {
     }
 
     if let Err(e) =
-        run_experiments_incremental_output(CONFIG.simulation.n_experiments, cfg, args.output_dir)
+        run_experiments_incremental_output(CONFIG.simulation.n_experiments, args.output_dir)
     {
         eprintln!("Error while running experiment: {}", e);
     }

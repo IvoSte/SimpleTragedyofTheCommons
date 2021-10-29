@@ -4,7 +4,7 @@ pub mod rl_algs;
 pub mod structs;
 
 use self::agent_brain::AgentBrain;
-use self::structs::{AgentType};
+use self::structs::{AgentState, AgentType};
 
 /// The state of an agent, either alive or dead
 #[derive(PartialEq, Eq)]
@@ -12,7 +12,6 @@ pub enum AgentVitalState {
     ALIVE,
     DEAD,
 }
-
 
 /// An agent in the ToTC simulation
 pub struct Agent {
@@ -91,8 +90,7 @@ impl Agent {
         println!("Agent {} has score {}", self.id, self.score);
     }
 
-    //    pub fn live(&mut self) {
-    // Advance one time step, so do things like
-    // reducing score, planning next action, etc.
-    //    }
+    pub fn get_current_state(&self) -> Option<AgentState> {
+        self.brain.get_current_state()
+    }
 }

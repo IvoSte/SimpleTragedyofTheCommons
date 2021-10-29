@@ -6,7 +6,6 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::agent::actions::{Action, Actions};
-use crate::config::{ExperimentConfig, StateThresholds};
 use crate::{Agent, CONFIG};
 
 pub enum AgentType {
@@ -37,14 +36,13 @@ impl AgentState {
     // Using state as key for the Q table, as string
     pub fn to_string(&self) -> String {
         String::from(format!(
-            "{} {}",
+            "{}_{}",
             &self.commons_state.to_string(),
-            &self.score_state.to_string()
+            &self.score_state.to_string(),
         ))
     }
     // Maybe wierd way to initialize?
     pub fn from_values(commons_value: i32, score_value: i32) -> AgentState {
-
         let mut agentstate = AgentState {
             commons_state: ResourceState::MEDIUM,
             score_state: ResourceState::MEDIUM,
@@ -59,9 +57,12 @@ impl AgentState {
         // below 70% is medium
         // above 70% is high
 
-        if (commons_value as f32) < (CONFIG.state_thresholds.commons_low * max_commons_value as f32) {
+        if (commons_value as f32) < (CONFIG.state_thresholds.commons_low * max_commons_value as f32)
+        {
             self.commons_state = ResourceState::LOW;
-        } else if (commons_value as f32) < (CONFIG.state_thresholds.commons_med * max_commons_value as f32) {
+        } else if (commons_value as f32)
+            < (CONFIG.state_thresholds.commons_med * max_commons_value as f32)
+        {
             self.commons_state = ResourceState::MEDIUM;
         } else {
             self.commons_state = ResourceState::HIGH;
@@ -81,14 +82,12 @@ impl AgentState {
     }
 
     pub fn state_keys() -> Vec<String> {
-        let mut vec: Vec<String> = Vec::new();
+        let mut vec: Vec<String> = Vec::with_capacity(ResourceState::iter().len() ^ 2);
         // loop over all state permutations
         for state_1 in ResourceState::iter() {
             for state_2 in ResourceState::iter() {
                 // state permutation is the key in the table
-                let state_key =
-                    String::from(format!("{} {}", state_1.to_string(), state_2.to_string()));
-                vec.push(state_key);
+                vec.push(format!("{}_{}", state_1.to_string(), state_2.to_string()));
             }
         }
         vec

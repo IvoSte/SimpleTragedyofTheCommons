@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs::{File, OpenOptions};
-use std::path::PathBuf;
+use std::fs::File;
 
 use csv::Writer;
 use rayon::prelude::*;
 use serde::Serialize;
 
-use crate::agent::structs::QTable;
-use crate::config::ExperimentConfig;
+use crate::agent::structs::{AgentState, QTable};
+use crate::CONFIG;
 
 pub trait Statistics {
     fn report(&self);
@@ -18,7 +17,7 @@ pub struct EpochStatistics {
     epoch_number: i32,
     pub alive_agents: i32,
     resources_in_pool: i32,
-    chosen_actions: Vec<i32>,
+    chosen_actions: HashMap<String, Vec<i32>>,
 }
 
 impl EpochStatistics {
@@ -26,7 +25,7 @@ impl EpochStatistics {
         epoch_number: i32,
         alive_agents: i32,
         resources_in_pool: i32,
-        chosen_actions: Vec<i32>,
+        chosen_actions: HashMap<String, Vec<i32>>,
     ) -> EpochStatistics {
         EpochStatistics {
             epoch_number,
@@ -77,14 +76,41 @@ impl GenerationStatistics {
         }
     }
 
-    fn as_csv_record(&self) -> GenerationCsvRecord {
-        let n_actions = self.epochs_stats[0].chosen_actions.len();
-        let mut sum_chosen_actions = vec![0; self.epochs_stats[0].chosen_actions.len()];
-        for epoch_stats in &self.epochs_stats {
-            for idx in 0..n_actions {
-                sum_chosen_actions[idx] += epoch_stats.chosen_actions[idx];
+    pub fn csv_header() -> Vec<String> {
+        let mut header: Vec<String> = vec![
+            "gen_num".to_string(),
+            "epochs_ran".to_string(),
+            "reached_equilibrium".to_string(),
+            "agents_alive".to_string(),
+        ];
+        for state_key in AgentState::state_keys() {
+            for action_idx in 0..CONFIG.experiment.n_actions {
+                header.push(format!("{}_{}", state_key, action_idx));
             }
         }
+
+        header
+    }
+
+    fn as_csv_record(&self) -> GenerationCsvRecord {
+        let state_keys = AgentState::state_keys();
+
+        let mut sum_chosen_actions: Vec<i32> =
+            vec![0; state_keys.len() * CONFIG.experiment.n_actions as usize];
+
+        for epoch_stats in &self.epochs_stats {
+            for (state_key, times_chosen_vec) in &epoch_stats.chosen_actions {
+                for (idx, times_chosen) in times_chosen_vec.iter().enumerate() {
+                    sum_chosen_actions[state_keys
+                        .iter()
+                        .position(|key| key == state_key)
+                        .unwrap()
+                        * CONFIG.experiment.n_actions as usize
+                        + idx] += times_chosen;
+                }
+            }
+        }
+
         GenerationCsvRecord {
             gen_num: self.generation_number,
             epochs_ran: self.epochs_stats.len() as i32,
