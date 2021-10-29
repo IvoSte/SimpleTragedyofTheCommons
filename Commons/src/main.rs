@@ -23,6 +23,15 @@ use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use structopt::StructOpt;
 
+use once_cell::sync::Lazy;
+
+
+static EXPERIMENT_CONFIG: Lazy<ExperimentConfig> = Lazy::new(||{match CommandLineArgs::from_args().config_path {
+    Some(path) => confy::load_path(path).unwrap(),
+    _ => Default::default(),
+}});
+
+
 fn make_agents(n_agents: i32, n_actions: i32) -> Vec<Agent> {
     let mut agents: Vec<Agent> = Vec::with_capacity(n_agents as usize);
 
@@ -211,7 +220,7 @@ fn main() {
         } else {
             ""
         },
-        cfg.n_generations
+        EXPERIMENT_CONFIG.n_generations
     );
 
     if args.output_dir.as_path().exists() {

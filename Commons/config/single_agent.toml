@@ -1,4 +1,4 @@
-n_generations = 100000
+n_generations = 1337
 epochs_per_gen = 200
 n_agents = 1
 n_actions = 5

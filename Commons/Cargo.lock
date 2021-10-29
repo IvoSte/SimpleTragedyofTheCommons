@@ -59,6 +59,7 @@ dependencies = [
  "float-ord",
  "getset",
  "indicatif",
+ "once_cell",
  "rand",
  "rayon",
  "serde",

@@ -163,14 +163,17 @@ impl Experiment {
         let consumption = self.config.consumption;
         let pool = self.commons.resource_pool;
 
+        // At days end, agents consume their food, go to sleep and see what
+        // their cumulative actions have done to the commons, and their own food supply
         for agent in &mut self.agents {
             if agent.is_alive() {
+                // let debug_print = true if agent.get_current_state().unwrap()
                 agent.consume(consumption);
                 agent.update_state(pool);
                 agent.learn();
             }
         }
-        
+
         EpochStatistics::new(
             epoch_number,
             self.agents.iter().filter(|agent| agent.is_alive()).count() as i32,
