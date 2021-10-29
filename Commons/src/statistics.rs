@@ -301,6 +301,9 @@ impl RLStatistics {
         Ok(())
     }
 
+    pub fn get_q_table(&self) -> &QTable {
+        &self.q_table
+    }
 
 }
 
