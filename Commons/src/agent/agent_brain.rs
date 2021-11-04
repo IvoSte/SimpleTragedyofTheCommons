@@ -114,4 +114,8 @@ impl AgentBrain {
     pub fn report_q_table(&self) {
         self.q_table.report();
     }
+
+    pub fn get_current_state(&self) -> Option<AgentState> {
+        self.current_state
+    }
 }

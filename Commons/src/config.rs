@@ -1,4 +1,3 @@
-use dialoguer::theme::SimpleTheme;
 use structopt::StructOpt;
 
 use serde::{Deserialize, Serialize};
@@ -20,8 +19,6 @@ pub struct CommandLineArgs {
     #[structopt(short, long, default_value = "1")]
     pub n_experiments: i32,
 }
-
-
 
 #[derive(Serialize, Deserialize, Default, Copy, Clone)]
 pub struct Config {
