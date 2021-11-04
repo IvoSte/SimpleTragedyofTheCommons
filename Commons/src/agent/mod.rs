@@ -80,10 +80,18 @@ impl Agent {
     }
 
     pub fn revive(&mut self) {
+        //println!("{}", self.score);
+        self.score = 0;
         self.vitals = AgentVitalState::ALIVE;
     }
 
-    pub fn report_action_evs(&self) {
+    pub fn report(&self) {
+        self.print_score();
+        println!("planned action {}", self.planned_action);
+        self.report_brain();
+    }
+
+    pub fn report_brain(&self) {
         self.brain.report();
     }
 

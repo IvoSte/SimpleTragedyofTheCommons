@@ -44,7 +44,6 @@ impl AgentState {
     }
     // Maybe wierd way to initialize?
     pub fn from_values(commons_value: i32, score_value: i32) -> AgentState {
-
         let mut agentstate = AgentState {
             commons_state: ResourceState::MEDIUM,
             score_state: ResourceState::MEDIUM,
@@ -59,9 +58,12 @@ impl AgentState {
         // below 70% is medium
         // above 70% is high
 
-        if (commons_value as f32) < (CONFIG.state_thresholds.commons_low * max_commons_value as f32) {
+        if (commons_value as f32) < (CONFIG.state_thresholds.commons_low * max_commons_value as f32)
+        {
             self.commons_state = ResourceState::LOW;
-        } else if (commons_value as f32) < (CONFIG.state_thresholds.commons_med * max_commons_value as f32) {
+        } else if (commons_value as f32)
+            < (CONFIG.state_thresholds.commons_med * max_commons_value as f32)
+        {
             self.commons_state = ResourceState::MEDIUM;
         } else {
             self.commons_state = ResourceState::HIGH;
@@ -92,6 +94,14 @@ impl AgentState {
             }
         }
         vec
+    }
+
+    pub fn report(&self) {
+        println!(
+            "commons {} score {}",
+            &self.commons_state.to_string(),
+            &self.score_state.to_string()
+        )
     }
 }
 

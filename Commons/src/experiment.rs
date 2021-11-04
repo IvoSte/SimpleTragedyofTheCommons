@@ -174,6 +174,12 @@ impl Experiment {
             }
         }
 
+        if epoch_number % 100 > 0 && epoch_number % 100 > 5 {
+            for agent in &self.agents {
+                agent.report();
+            }
+        }
+
         EpochStatistics::new(
             epoch_number,
             self.agents.iter().filter(|agent| agent.is_alive()).count() as i32,

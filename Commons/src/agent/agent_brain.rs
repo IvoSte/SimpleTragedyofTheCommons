@@ -80,7 +80,14 @@ impl AgentBrain {
         self.decrease_last_reward(self.rlparameters.death_punish);
     }
 
+    pub fn update_state(&mut self, pool: i32, score: i32) {
+        self.previous_state = self.current_state.clone();
+        // better encapsulate this, agent brain should not know the size of the pool
+        self.current_state = Some(AgentState::from_values(pool, score));
+    }
+
     pub fn report(&self) {
+        self.report_states();
         match self.behaviour_type {
             AgentType::BANDIT => self.report_action_evs(),
             AgentType::QLEARNING => self.report_q_table(),
@@ -91,13 +98,20 @@ impl AgentBrain {
         self.actions.report();
     }
 
-    pub fn report_q_table(&self) {
-        self.q_table.report();
+    pub fn report_states(&self) {
+        println!("STATES\nprevious -- ");
+        match &self.previous_state {
+            Some(state) => state.report(),
+            None => (),
+        }
+        println!("current -- ");
+        match &self.current_state {
+            Some(state) => state.report(),
+            None => (),
+        }
     }
 
-    pub fn update_state(&mut self, pool: i32, score: i32) {
-        self.previous_state = self.current_state.clone();
-        // better encapsulate this, agent brain should not know the size of the pool
-        self.current_state = Some(AgentState::from_values(pool, score));
+    pub fn report_q_table(&self) {
+        self.q_table.report();
     }
 }
