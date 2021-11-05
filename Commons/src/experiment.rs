@@ -149,9 +149,10 @@ impl Experiment {
             }
         }
 
-        if epoch_number % 100 > 0 && epoch_number % 100 > 5 {
+        if epoch_number % 100 > 0 && epoch_number % 100 < 5 {
             for agent in &self.agents {
-                agent.report();
+                //println!("\n\nEpoch {}\nPool {}\n", epoch_number, pool);
+                //agent.report();
             }
         }
 

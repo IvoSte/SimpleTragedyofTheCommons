@@ -9,7 +9,7 @@ def actions_ev_chart(data):
         for state_2 in ["LOW", "MEDIUM", "HIGH"]:
             counter += 1
             plt.subplot(3,3, counter)
-            plt.bar(np.arange(len(data["{} {}".format(state_1, state_2)])), data["{} {}".format(state_1, state_2)])
+            plt.bar(np.arange(len(data["{}_{}".format(state_1, state_2)])), data["{}_{}".format(state_1, state_2)])
             plt.title("c: {} s: {}".format(state_1, state_2))
     plt.show()
 
