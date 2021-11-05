@@ -38,6 +38,7 @@ pub struct ExperimentConfig {
     pub max_pool_size: i32,
     pub regrowth_rate: f32,
     pub consumption: i32,
+    pub empty_commons_purge: bool,
 }
 
 impl Default for ExperimentConfig {
@@ -51,6 +52,7 @@ impl Default for ExperimentConfig {
             max_pool_size: 120,
             regrowth_rate: 1.2,
             consumption: 1,
+            empty_commons_purge: false,
         }
     }
 }
@@ -61,6 +63,7 @@ pub struct RLParameters {
     pub alpha: f32,
     pub gamma: f32,
     pub death_punish: i32,
+    pub init_mode: i32,
 }
 
 impl Default for RLParameters {
@@ -70,6 +73,7 @@ impl Default for RLParameters {
             alpha: 0.05,
             gamma: 0.9,
             death_punish: 100000,
+            init_mode: 0, // 0: random, 1: optimistic initial values, 2: 0.0
         }
     }
 }

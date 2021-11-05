@@ -61,10 +61,23 @@ impl Agent {
         self.score -= value;
         self.brain.decrease_last_reward(value);
         if self.score < 0 {
+            self.die();
+        }
+    }
+    ///  Agent dies 
+    pub fn die(&mut self) {
+        self.vitals = AgentVitalState::DEAD;
+        self.brain.death_punishment();
+    }
+
+    /// Manually kill an agent, E.G. when the commons are depleted
+    pub fn kill(&mut self) {
+        if self.vitals == AgentVitalState::ALIVE { // What is dead may never die
             self.vitals = AgentVitalState::DEAD;
             self.brain.death_punishment();
         }
     }
+
     /// Update expected values
     pub fn learn(&mut self) {
         self.brain.update_ev(self.planned_action as usize);

@@ -5,6 +5,7 @@ pub struct Commons {
     pub resource_pool: i32,
     pub regrowth_function: fn(i32, f32) -> i32,
     regrowth_rate: f32,
+    pub depleted: bool,
 }
 
 impl Commons {
@@ -20,6 +21,7 @@ impl Commons {
             resource_pool,
             regrowth_function,
             regrowth_rate,
+            depleted: false,
         }
     }
 
@@ -34,6 +36,7 @@ impl Commons {
         let res = if self.resource_pool >= value {
             value
         } else {
+            self.depleted = true;
             self.resource_pool
         };
         self.resource_pool -= res;
@@ -42,5 +45,6 @@ impl Commons {
 
     pub fn reset(&mut self) {
         self.resource_pool = self.init_resources;
+        self.depleted = false;
     }
 }

@@ -3,6 +3,8 @@ use rand::prelude::*;
 use rand::seq::SliceRandom;
 use std::ops::{Index, IndexMut};
 
+use crate::CONFIG;
+
 /// An action / action availible to an agent, tracking its own statistics
 ///
 #[derive(Clone, Copy)]
@@ -73,8 +75,16 @@ impl Actions {
     fn init_actions(num_actions: i32) -> Vec<Action> {
         let mut actions: Vec<Action> = Vec::with_capacity(num_actions as usize);
         for i in 0..num_actions {
-            // TODO: initialization strategy can be applied here -- current strategy is random float [0,0.01]
-            actions.push(Action::new(i, 0.0, 0)); //rand::thread_rng().gen::<f32>() * 0.01
+            // initialization strategy 
+            match CONFIG.rl_params.init_mode {
+                // 0: 0 with fuzzing [0, 0.01]
+                0 => actions.push(Action::new(i, rand::thread_rng().gen::<f32>() * 0.01, 0)),
+                // 1: optimistic inital values [5 + fuzzing]
+                1 => actions.push(Action::new(i, 5.0 + (rand::thread_rng().gen::<f32>() * 0.01), 0)),
+                // 2: 0.0 --> without tiebreaker will slide from max to min index 
+                2 => actions.push(Action::new(i, 0.0, 0)),
+                _ => actions.push(Action::new(i, rand::thread_rng().gen::<f32>() * 0.01, 0)),
+            }
         }
         return actions;
     }

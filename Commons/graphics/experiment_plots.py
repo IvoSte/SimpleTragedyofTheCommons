@@ -11,12 +11,16 @@ def plot_double(data_1, data_2):
 def plot_quad(data_1, data_2, data_3, data_4):
     plt.subplot(2,2,1)
     plt.plot(data_1)
+    plt.title("Epochs alive")
     plt.subplot(2, 2, 2)
     plt.plot(data_2)
+    plt.title("Epochs alive - average")
     plt.subplot(2,2,3)
     plt.plot(data_3)
+    plt.title("Agents alive")
     plt.subplot(2, 2, 4)
     plt.plot(data_4)
+    plt.title("Agents alive - average")
     plt.show()
 
 

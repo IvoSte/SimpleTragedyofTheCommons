@@ -4,14 +4,16 @@ import numpy as np
 from numpy import genfromtxt
 import math
 import pandas as pd
-from agent_plots import actions_ev_chart
+from agent_plots import actions_ev_chart, state_visits
 from experiment_plots import plot_double, plot_quad, plot_performance_over_time
+from transform_data import average_results
 
 #agent_ev = pd.read_csv('../data/experiment_1/long/avg_rl_stats.csv')
 # agent_ev = pd.read_csv('../data/single_agent/avg_rl_stats.csv')
-agent_ev = pd.read_csv('../data/single_agent_multirun/avg_rl_stats.csv')
+agent_ev = pd.read_csv('../data/commons_purge_oiv/avg_rl_stats.csv')
 data = genfromtxt('../data/test.csv', delimiter=',')
-p_data = pd.read_csv('../data/single_agent_multirun/0/gen_stats.csv')
+#p_data = pd.read_csv('../data/prelim_final/0/gen_stats.csv')
+p_data = average_results('../data/commons_purge_oiv', 'gen_stats.csv', 12)
 #values = np.cumsum(np.random.randn(1000, 1))
 
 
@@ -38,8 +40,10 @@ def main():
     #binned_values = bin_values(dataset, 10)
     #plot_performance_over_time(binned_values)
     #plot_double(dataset, binned_values)
+
     plot_with_pandas(p_data)
     actions_ev_chart(agent_ev)
+    state_visits(p_data, 5)
     print("Done")
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ use std::fs::File;
 
 use indicatif::{ProgressBar, ProgressIterator};
 
+use crate::CONFIG;
 use crate::agent::structs::QTable;
 use crate::statistics::RLStatistics;
 
@@ -135,26 +136,26 @@ impl Experiment {
         // the new state will be, not what it is directly after.
         self.commons.grow();
 
-        let consumption = self.config.consumption;
-        let pool = self.commons.resource_pool;
-
         // At days end, agents consume their food, go to sleep and see what
         // their cumulative actions have done to the commons, and their own food supply
         for agent in &mut self.agents {
             if agent.is_alive() {
                 // let debug_print = true if agent.get_current_state().unwrap()
-                agent.consume(consumption);
-                agent.update_state(pool);
+                agent.consume(self.config.consumption);
+                if CONFIG.experiment.empty_commons_purge && self.commons.depleted {
+                    agent.kill();
+                }
+                agent.update_state( self.commons.resource_pool);
                 agent.learn();
             }
         }
 
-        if epoch_number % 100 > 0 && epoch_number % 100 < 5 {
-            for agent in &self.agents {
+        //if epoch_number % 100 > 0 && epoch_number % 100 < 5 {
+        //    for agent in &self.agents {
                 //println!("\n\nEpoch {}\nPool {}\n", epoch_number, pool);
                 //agent.report();
-            }
-        }
+        //    }
+        //}
 
         EpochStatistics::new(
             epoch_number,
